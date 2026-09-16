@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard - SmartFinance</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<div class="dashboard-layout">
+
+
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+
+    <div>
+
+        <div class="sidebar-logo">
+
+            <i class="fa-solid fa-wallet"></i>
+
+            <span>SmartFinance</span>
+
+        </div>
+
+
+        <nav class="sidebar-nav">
+
+            <a href="dashboard.html" class="active">
+
+                <i class="fa-solid fa-house"></i>
+
+                Dashboard
+
+            </a>
+
+
+            <a href="income.html">
+
+                <i class="fa-solid fa-arrow-down"></i>
+
+                Income
+
+            </a>
+
+
+            <a href="expenses.html">
+
+                <i class="fa-solid fa-arrow-up"></i>
+
+                Expenses
+
+            </a>
+
+
+            <a href="analytics.html">
+
+                <i class="fa-solid fa-chart-pie"></i>
+
+                Analytics
+
+            </a>
+
+
+            <a href="ai-assistant.html">
+
+                <i class="fa-solid fa-robot"></i>
+
+                AI Assistant
+
+            </a>
+
+        </nav>
+
+    </div>
+
+
+    <div class="sidebar-bottom">
+        <a href="javascript:void(0)" onclick="AuthManager.logout()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            Sign Out
+        </a>
+    </div>
+
+</aside>
+
+
+<!-- MAIN -->
+
+<main class="dashboard-main">
+
+
+<div class="topbar">
+
+    <div>
+
+        <h1>Dashboard</h1>
+
+        <p>
+            Here's your financial overview.
+        </p>
+
+    </div>
+
+
+    <a href="profile.html" class="profile-icon">
+
+        <i class="fa-solid fa-user"></i>
+
+    </a>
+
+</div>
+
+
+<!-- SUMMARY CARDS -->
+
+<div class="summary-grid">
+
+
+<div class="summary-card balance-card">
+
+    <div class="summary-icon">
+
+        <i class="fa-solid fa-wallet"></i>
+
+    </div>
+
+    <div>
+
+        <span>Current Balance</span>
+
+        <h2>₹42,850</h2>
+
+        <small class="positive">
+            Available balance
+        </small>
+
+    </div>
+
+</div>
+
+
+<div class="summary-card">
+
+    <div class="summary-icon income-icon">
+
+        <i class="fa-solid fa-arrow-down"></i>
+
+    </div>
+
+    <div>
+
+        <span>Total Income</span>
+
+        <h2>₹60,000</h2>
+
+        <small class="positive">
+            This month
+        </small>
+
+    </div>
+
+</div>
+
+
+<div class="summary-card">
+
+    <div class="summary-icon expense-icon">
+
+        <i class="fa-solid fa-arrow-up"></i>
+
+    </div>
+
+    <div>
+
+        <span>Total Expenses</span>
+
+        <h2>₹17,150</h2>
+
+        <small class="negative">
+            This month
+        </small>
+
+    </div>
+
+</div>
+
+
+<div class="summary-card">
+
+    <div class="summary-icon saving-icon">
+
+        <i class="fa-solid fa-piggy-bank"></i>
+
+    </div>
+
+    <div>
+
+        <span>Savings</span>
+
+        <h2>₹42,850</h2>
+
+        <small class="positive">
+            71.4% of income
+        </small>
+
+    </div>
+
+</div>
+
+
+</div>
+
+
+<!-- QUICK ACTIONS -->
+
+<div class="section-header">
+
+    <h2>Quick Actions</h2>
+
+</div>
+
+
+<div class="quick-actions">
+
+
+<a href="income.html" class="quick-card">
+
+    <i class="fa-solid fa-plus"></i>
+
+    <div>
+
+        <strong>Add Income</strong>
+
+        <span>Record new income</span>
+
+    </div>
+
+</a>
+
+
+<a href="expenses.html" class="quick-card">
+
+    <i class="fa-solid fa-receipt"></i>
+
+    <div>
+
+        <strong>Add Expense</strong>
+
+        <span>Record a new expense</span>
+
+    </div>
+
+</a>
+
+
+<a href="analytics.html" class="quick-card">
+
+    <i class="fa-solid fa-chart-pie"></i>
+
+    <div>
+
+        <strong>View Analytics</strong>
+
+        <span>Analyze your spending</span>
+
+    </div>
+
+</a>
+
+
+<a href="ai-assistant.html" class="quick-card">
+
+    <i class="fa-solid fa-robot"></i>
+
+    <div>
+
+        <strong>Ask AI Assistant</strong>
+
+        <span>Get financial suggestions</span>
+
+    </div>
+
+</a>
+
+
+</div>
+
+
+<!-- RECENT TRANSACTIONS -->
+
+<div class="content-card">
+
+    <div class="card-heading">
+
+        <div>
+
+            <h2>Recent Transactions</h2>
+
+            <p>
+                Your latest income and expenses
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="transaction-list">
+
+
+        <div class="transaction">
+
+            <div class="transaction-icon income">
+
+                <i class="fa-solid fa-arrow-down"></i>
+
+            </div>
+
+            <div class="transaction-info">
+
+                <strong>Monthly Salary</strong>
+
+                <span>Income</span>
+
+            </div>
+
+            <strong class="amount income-text">
+                +₹50,000
+            </strong>
+
+        </div>
+
+
+        <div class="transaction">
+
+            <div class="transaction-icon expense">
+
+                <i class="fa-solid fa-cart-shopping"></i>
+
+            </div>
+
+            <div class="transaction-info">
+
+                <strong>Grocery Shopping</strong>
+
+                <span>Food</span>
+
+            </div>
+
+            <strong class="amount expense-text">
+                -₹3,250
+            </strong>
+
+        </div>
+
+
+        <div class="transaction">
+
+            <div class="transaction-icon expense">
+
+                <i class="fa-solid fa-shirt"></i>
+
+            </div>
+
+            <div class="transaction-info">
+
+                <strong>Clothing Purchase</strong>
+
+                <span>Shopping</span>
+
+            </div>
+
+            <strong class="amount expense-text">
+                -₹2,800
+            </strong>
+
+        </div>
+
+
+        <div class="transaction">
+
+            <div class="transaction-icon income">
+
+                <i class="fa-solid fa-laptop"></i>
+
+            </div>
+
+            <div class="transaction-info">
+
+                <strong>Freelance Income</strong>
+
+                <span>Other Income</span>
+
+            </div>
+
+            <strong class="amount income-text">
+                +₹10,000
+            </strong>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+</main>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

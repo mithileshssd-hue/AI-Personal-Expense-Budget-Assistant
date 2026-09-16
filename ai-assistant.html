@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Assistant - SmartFinance</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link
+rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+>
+
+</head>
+
+
+<body>
+
+
+<div class="dashboard-layout">
+
+
+<aside class="sidebar">
+
+<div>
+
+<div class="sidebar-logo">
+
+<i class="fa-solid fa-wallet"></i>
+
+<span>SmartFinance</span>
+
+</div>
+
+
+<nav class="sidebar-nav">
+
+<a href="dashboard.html">
+
+<i class="fa-solid fa-house"></i>
+Dashboard
+
+</a>
+
+
+<a href="income.html">
+
+<i class="fa-solid fa-arrow-down"></i>
+Income
+
+</a>
+
+
+<a href="expenses.html">
+
+<i class="fa-solid fa-arrow-up"></i>
+Expenses
+
+</a>
+
+
+<a href="analytics.html">
+
+<i class="fa-solid fa-chart-pie"></i>
+Analytics
+
+</a>
+
+
+<a href="ai-assistant.html" class="active">
+
+<i class="fa-solid fa-robot"></i>
+AI Assistant
+
+</a>
+
+</nav>
+
+</div>
+
+
+<div class="sidebar-bottom">
+<a href="javascript:void(0)" onclick="AuthManager.logout()">
+<i class="fa-solid fa-right-from-bracket"></i>
+Sign Out
+</a>
+</div>
+
+</aside>
+
+
+<main class="dashboard-main">
+
+
+<div class="topbar">
+
+<div>
+
+<h1>AI Financial Assistant</h1>
+
+<p>
+Get simple suggestions based on your financial activity.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="ai-container">
+
+
+<div class="ai-header">
+
+<div class="ai-icon">
+
+<i class="fa-solid fa-robot"></i>
+
+</div>
+
+<div>
+
+<h2>Financial Assistant</h2>
+
+<p>
+Here are some suggestions based on your current data.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="ai-message">
+
+<div class="ai-message-icon">
+
+<i class="fa-solid fa-lightbulb"></i>
+
+</div>
+
+<div>
+
+<h3>Budget Recommendation</h3>
+
+<p>
+Your current expenses are lower than your income.
+Consider creating a monthly budget to maintain
+your savings rate.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="ai-message">
+
+<div class="ai-message-icon">
+
+<i class="fa-solid fa-cart-shopping"></i>
+
+</div>
+
+<div>
+
+<h3>Shopping Alert</h3>
+
+<p>
+Shopping is a significant part of your current expenses.
+Review non-essential purchases before spending.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="ai-message">
+
+<div class="ai-message-icon">
+
+<i class="fa-solid fa-piggy-bank"></i>
+
+</div>
+
+<div>
+
+<h3>Savings Suggestion</h3>
+
+<p>
+Your current savings are strong. Setting a specific
+savings goal can help you maintain this progress.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="ai-chat">
+
+<h2>Ask the AI Assistant</h2>
+
+<p>
+Ask a question about your personal finances.
+</p>
+
+
+<div class="chat-input">
+
+<input
+type="text"
+id="question"
+placeholder="Example: Where am I spending the most? How can I save more?"
+onkeydown="if(event.key==='Enter') askAI()"
+>
+
+<button onclick="askAI()">
+
+<i class="fa-solid fa-paper-plane"></i>
+
+</button>
+
+</div>
+
+<div class="ai-quick-pills">
+    <button type="button" class="ai-pill" onclick="askAI('Where am I spending the most?')">🔥 Biggest Expense</button>
+    <button type="button" class="ai-pill" onclick="askAI('How can I save more money?')">💡 How to save?</button>
+    <button type="button" class="ai-pill" onclick="askAI('How much did I spend on food?')">🍔 Food spending</button>
+    <button type="button" class="ai-pill" onclick="askAI('What is my financial status?')">📊 Financial Health</button>
+</div>
+
+<div id="aiAnswer" class="ai-answer"></div>
+
+</div>
+
+
+</div>
+
+
+</main>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

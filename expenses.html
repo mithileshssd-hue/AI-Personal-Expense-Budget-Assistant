@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Expenses - SmartFinance</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link
+rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+>
+
+</head>
+
+
+<body>
+
+
+<div class="dashboard-layout">
+
+
+<aside class="sidebar">
+
+<div>
+
+<div class="sidebar-logo">
+
+<i class="fa-solid fa-wallet"></i>
+
+<span>SmartFinance</span>
+
+</div>
+
+
+<nav class="sidebar-nav">
+
+<a href="dashboard.html">
+
+<i class="fa-solid fa-house"></i>
+Dashboard
+
+</a>
+
+
+<a href="income.html">
+
+<i class="fa-solid fa-arrow-down"></i>
+Income
+
+</a>
+
+
+<a href="expenses.html" class="active">
+
+<i class="fa-solid fa-arrow-up"></i>
+Expenses
+
+</a>
+
+
+<a href="analytics.html">
+
+<i class="fa-solid fa-chart-pie"></i>
+Analytics
+
+</a>
+
+
+<a href="ai-assistant.html">
+
+<i class="fa-solid fa-robot"></i>
+AI Assistant
+
+</a>
+
+</nav>
+
+</div>
+
+
+<div class="sidebar-bottom">
+<a href="javascript:void(0)" onclick="AuthManager.logout()">
+<i class="fa-solid fa-right-from-bracket"></i>
+Sign Out
+</a>
+</div>
+
+</aside>
+
+
+<main class="dashboard-main">
+
+
+<div class="topbar">
+
+<div>
+
+<h1>Expenses</h1>
+
+<p>
+Track and manage your daily spending.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="page-actions">
+
+<button class="navy-btn small-btn" onclick="showExpenseMessage()">
+
+<i class="fa-solid fa-plus"></i>
+
+Add Expense
+
+</button>
+
+</div>
+
+
+<div class="summary-grid">
+
+
+<div class="summary-card">
+
+<div class="summary-icon expense-icon">
+
+<i class="fa-solid fa-receipt"></i>
+
+</div>
+
+<div>
+
+<span>Total Expenses</span>
+
+<h2>₹17,150</h2>
+
+<small>This month</small>
+
+</div>
+
+</div>
+
+
+<div class="summary-card">
+
+<div class="summary-icon">
+
+<i class="fa-solid fa-list"></i>
+
+</div>
+
+<div>
+
+<span>Transactions</span>
+
+<h2>5</h2>
+
+<small>Expense entries</small>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="content-card">
+
+<div class="card-heading">
+
+<div>
+
+<h2>Expense Transactions</h2>
+
+<p>
+Your recent spending
+</p>
+
+</div>
+
+</div>
+
+
+<div class="transaction-list">
+
+
+<div class="transaction">
+
+<div class="transaction-icon expense">
+
+<i class="fa-solid fa-cart-shopping"></i>
+
+</div>
+
+<div class="transaction-info">
+
+<strong>Grocery Shopping</strong>
+
+<span>Food • 02 September</span>
+
+</div>
+
+<strong class="amount expense-text">
+-₹3,250
+</strong>
+
+</div>
+
+
+<div class="transaction">
+
+<div class="transaction-icon expense">
+
+<i class="fa-solid fa-shirt"></i>
+
+</div>
+
+<div class="transaction-info">
+
+<strong>Clothing Purchase</strong>
+
+<span>Shopping • 04 September</span>
+
+</div>
+
+<strong class="amount expense-text">
+-₹2,800
+</strong>
+
+</div>
+
+
+<div class="transaction">
+
+<div class="transaction-icon expense">
+
+<i class="fa-solid fa-plane"></i>
+
+</div>
+
+<div class="transaction-info">
+
+<strong>Travel Expense</strong>
+
+<span>Travel • 06 September</span>
+
+</div>
+
+<strong class="amount expense-text">
+-₹4,500
+</strong>
+
+</div>
+
+
+<div class="transaction">
+
+<div class="transaction-icon expense">
+
+<i class="fa-solid fa-book"></i>
+
+</div>
+
+<div class="transaction-info">
+
+<strong>Education</strong>
+
+<span>Education • 07 September</span>
+
+</div>
+
+<strong class="amount expense-text">
+-₹2,600
+</strong>
+
+</div>
+
+
+<div class="transaction">
+
+<div class="transaction-icon expense">
+
+<i class="fa-solid fa-bolt"></i>
+
+</div>
+
+<div class="transaction-info">
+
+<strong>Utilities</strong>
+
+<span>Bills • 08 September</span>
+
+</div>
+
+<strong class="amount expense-text">
+-₹4,000
+</strong>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+</main>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
