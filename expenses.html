@@ -97,217 +97,59 @@ Sign Out
 
 
 <div class="topbar">
-
-<div>
-
-<h1>Expenses</h1>
-
-<p>
-Track and manage your daily spending.
-</p>
-
+    <div>
+        <h1>Expenses</h1>
+        <p>Track, filter, and manage your daily spending.</p>
+    </div>
+    <a href="profile.html" class="profile-icon">
+        <i class="fa-solid fa-user"></i>
+    </a>
 </div>
-
-</div>
-
 
 <div class="page-actions">
-
-<button class="navy-btn small-btn" onclick="showExpenseMessage()">
-
-<i class="fa-solid fa-plus"></i>
-
-Add Expense
-
-</button>
-
+    <button class="navy-btn small-btn" onclick="openTransactionModal('expense')">
+        <i class="fa-solid fa-plus"></i> Add Expense
+    </button>
 </div>
-
 
 <div class="summary-grid">
+    <div class="summary-card">
+        <div class="summary-icon expense-icon">
+            <i class="fa-solid fa-receipt"></i>
+        </div>
+        <div>
+            <span>Total Expenses</span>
+            <h2>₹0</h2>
+            <small>Current Month</small>
+        </div>
+    </div>
 
-
-<div class="summary-card">
-
-<div class="summary-icon expense-icon">
-
-<i class="fa-solid fa-receipt"></i>
-
+    <div class="summary-card">
+        <div class="summary-icon">
+            <i class="fa-solid fa-list-check"></i>
+        </div>
+        <div>
+            <span>Total Records</span>
+            <h2>0</h2>
+            <small>Expense entries</small>
+        </div>
+    </div>
 </div>
 
-<div>
-
-<span>Total Expenses</span>
-
-<h2>₹17,150</h2>
-
-<small>This month</small>
-
-</div>
-
-</div>
-
-
-<div class="summary-card">
-
-<div class="summary-icon">
-
-<i class="fa-solid fa-list"></i>
-
-</div>
-
-<div>
-
-<span>Transactions</span>
-
-<h2>5</h2>
-
-<small>Expense entries</small>
-
-</div>
-
-</div>
-
-</div>
-
+<!-- FILTER & SEARCH TOOLBAR -->
+<div id="expenseFilterToolbar" class="filter-toolbar"></div>
 
 <div class="content-card">
-
-<div class="card-heading">
-
-<div>
-
-<h2>Expense Transactions</h2>
-
-<p>
-Your recent spending
-</p>
-
-</div>
-
-</div>
-
-
-<div class="transaction-list">
-
-
-<div class="transaction">
-
-<div class="transaction-icon expense">
-
-<i class="fa-solid fa-cart-shopping"></i>
-
-</div>
-
-<div class="transaction-info">
-
-<strong>Grocery Shopping</strong>
-
-<span>Food • 02 September</span>
-
-</div>
-
-<strong class="amount expense-text">
--₹3,250
-</strong>
-
-</div>
-
-
-<div class="transaction">
-
-<div class="transaction-icon expense">
-
-<i class="fa-solid fa-shirt"></i>
-
-</div>
-
-<div class="transaction-info">
-
-<strong>Clothing Purchase</strong>
-
-<span>Shopping • 04 September</span>
-
-</div>
-
-<strong class="amount expense-text">
--₹2,800
-</strong>
-
-</div>
-
-
-<div class="transaction">
-
-<div class="transaction-icon expense">
-
-<i class="fa-solid fa-plane"></i>
-
-</div>
-
-<div class="transaction-info">
-
-<strong>Travel Expense</strong>
-
-<span>Travel • 06 September</span>
-
-</div>
-
-<strong class="amount expense-text">
--₹4,500
-</strong>
-
-</div>
-
-
-<div class="transaction">
-
-<div class="transaction-icon expense">
-
-<i class="fa-solid fa-book"></i>
-
-</div>
-
-<div class="transaction-info">
-
-<strong>Education</strong>
-
-<span>Education • 07 September</span>
-
-</div>
-
-<strong class="amount expense-text">
--₹2,600
-</strong>
-
-</div>
-
-
-<div class="transaction">
-
-<div class="transaction-icon expense">
-
-<i class="fa-solid fa-bolt"></i>
-
-</div>
-
-<div class="transaction-info">
-
-<strong>Utilities</strong>
-
-<span>Bills • 08 September</span>
-
-</div>
-
-<strong class="amount expense-text">
--₹4,000
-</strong>
-
-</div>
-
-
-</div>
-
+    <div class="card-heading">
+        <div>
+            <h2>Expense Transactions</h2>
+            <p>Your logged expenses with category, date & payment method</p>
+        </div>
+    </div>
+
+    <div class="transaction-list">
+        <!-- Rendered dynamically by script.js -->
+    </div>
 </div>
 
 

@@ -10,6 +10,6 @@ echo  instead of opening files directly via file://
 echo.
 echo  Starting server at: http://localhost:5500
 echo.
-start http://localhost:5500/register.html
+start http://localhost:5500/index.html
 python -m http.server 5500
 pause

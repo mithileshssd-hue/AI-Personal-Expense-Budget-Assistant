@@ -151,71 +151,62 @@
 
             <div class="feature-grid">
 
+                <!-- Budget Tracking -->
+                <div class="feature-card">
+                    <div class="feature-icon" style="background:#fef3c7; color:#d97706;">
+                        <i class="fa-solid fa-bullseye"></i>
+                    </div>
+                    <h3>Smart Budgeting</h3>
+                    <p>
+                        Set total and category-wise spending limits with visual progress alerts (normal, warning, critical).
+                    </p>
+                </div>
+
                 <!-- Income -->
                 <div class="feature-card">
-
                     <div class="feature-icon blue">
                         <i class="fa-solid fa-money-bill-transfer"></i>
                     </div>
-
                     <h3>Income Management</h3>
-
                     <p>
                         Record salary, scholarship, freelance income
                         and other sources of income.
                     </p>
-
                 </div>
-
 
                 <!-- Expenses -->
                 <div class="feature-card">
-
                     <div class="feature-icon red">
                         <i class="fa-solid fa-receipt"></i>
                     </div>
-
                     <h3>Expense Tracking</h3>
-
                     <p>
                         Track daily expenses by category, date,
                         payment method and description.
                     </p>
-
                 </div>
-
 
                 <!-- Analytics -->
                 <div class="feature-card">
-
                     <div class="feature-icon green">
                         <i class="fa-solid fa-chart-pie"></i>
                     </div>
-
                     <h3>Financial Analytics</h3>
-
                     <p>
                         Understand your spending patterns with
-                        charts and visual financial reports.
+                        interactive charts and visual financial reports.
                     </p>
-
                 </div>
-
 
                 <!-- AI Assistant -->
                 <div class="feature-card">
-
                     <div class="feature-icon purple">
                         <i class="fa-solid fa-robot"></i>
                     </div>
-
                     <h3>AI Financial Assistant</h3>
-
                     <p>
-                        Get personalized suggestions based on
-                        your income and spending habits.
+                        Get personalized suggestions, budget health alerts, and instant answers based on your activity.
                     </p>
-
                 </div>
 
             </div>
@@ -274,8 +265,18 @@
 
 <script src="script.js"></script>
 <script>
-    // If user is already logged in, adapt hero and nav buttons to link directly to dashboard
+    // Adapt hero card and nav buttons dynamically based on stored data and auth
     document.addEventListener('DOMContentLoaded', () => {
+        FinanceStore.init();
+        const summary = FinanceStore.getSummary();
+        const heroBal = document.querySelector('.balance-box h2');
+        const heroInc = document.querySelector('.mini-stats div:nth-child(1) strong');
+        const heroExp = document.querySelector('.mini-stats div:nth-child(2) strong');
+
+        if (heroBal) heroBal.textContent = formatCurrency(summary.balance);
+        if (heroInc) heroInc.textContent = formatCurrency(summary.totalIncome);
+        if (heroExp) heroExp.textContent = formatCurrency(summary.totalExpenses);
+
         const user = AuthManager.getCurrentUser();
         if (user) {
             const navActions = document.querySelector('.nav-actions');

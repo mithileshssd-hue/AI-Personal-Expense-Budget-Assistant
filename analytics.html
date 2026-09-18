@@ -100,197 +100,79 @@ Sign Out
 
 
 <div class="topbar">
-
-<div>
-
-<h1>Analytics</h1>
-
-<p>
-Understand your spending and financial patterns.
-</p>
-
+    <div>
+        <h1>Financial Analytics</h1>
+        <p>Understand your spending, cash flow ratios, and trends over time.</p>
+    </div>
+    <a href="profile.html" class="profile-icon">
+        <i class="fa-solid fa-user"></i>
+    </a>
 </div>
 
-</div>
-
+<!-- TIMEFRAME FILTER -->
+<div id="analyticsTimeframeBar" class="analytics-timeframe-bar"></div>
 
 <div class="analytics-grid">
+    <!-- PIE / DOUGHNUT CHART -->
+    <div class="content-card chart-card">
+        <div class="card-heading">
+            <div>
+                <h2>Expense Distribution</h2>
+                <p>Spending broken down by category</p>
+            </div>
+        </div>
 
+        <div class="pie-container">
+            <canvas id="expensePieChart"></canvas>
+        </div>
+    </div>
 
-<!-- PIE CHART -->
+    <!-- FINANCIAL SUMMARY -->
+    <div class="content-card">
+        <div class="card-heading">
+            <div>
+                <h2>Financial Health Summary</h2>
+                <p>Selected period key indicators</p>
+            </div>
+        </div>
 
-<div class="content-card chart-card">
+        <div class="analytics-stat">
+            <span>Total Inflow (Income)</span>
+            <strong class="income-text">₹0</strong>
+        </div>
 
-<div class="card-heading">
+        <div class="analytics-stat">
+            <span>Total Outflow (Expenses)</span>
+            <strong class="expense-text">₹0</strong>
+        </div>
 
-<div>
+        <div class="analytics-stat">
+            <span>Net Balance Surplus</span>
+            <strong>₹0</strong>
+        </div>
 
-<h2>Expense Distribution</h2>
-
-<p>
-Spending by category
-</p>
-
+        <div class="analytics-stat">
+            <span>Savings Efficiency Rate</span>
+            <strong class="positive">0%</strong>
+        </div>
+    </div>
 </div>
 
-</div>
-
-
-<div class="pie-container">
-
-<canvas id="expensePieChart"></canvas>
-
-</div>
-
-</div>
-
-
-<!-- FINANCIAL SUMMARY -->
-
-<div class="content-card">
-
-<div class="card-heading">
-
-<div>
-
-<h2>Financial Summary</h2>
-
-<p>
-Current month overview
-</p>
-
-</div>
-
-</div>
-
-
-<div class="analytics-stat">
-
-<span>Total Income</span>
-
-<strong class="income-text">
-₹60,000
-</strong>
-
-</div>
-
-
-<div class="analytics-stat">
-
-<span>Total Expenses</span>
-
-<strong class="expense-text">
-₹17,150
-</strong>
-
-</div>
-
-
-<div class="analytics-stat">
-
-<span>Remaining Balance</span>
-
-<strong>
-₹42,850
-</strong>
-
-</div>
-
-
-<div class="analytics-stat">
-
-<span>Savings Rate</span>
-
-<strong class="positive">
-71.4%
-</strong>
-
-</div>
-
-
-</div>
-
-</div>
-
+<!-- MULTI-MONTH & SAVINGS TREND CHARTS -->
+<div id="analyticsExtraCharts" class="chart-grid-full"></div>
 
 <!-- SPENDING INSIGHTS -->
-
 <div class="content-card insight-card">
+    <div class="card-heading">
+        <div>
+            <h2>AI Spending Insights & Observations</h2>
+            <p>Automated observations generated from your real financial data</p>
+        </div>
+    </div>
 
-<div class="card-heading">
-
-<div>
-
-<h2>Spending Insights</h2>
-
-<p>
-Important observations from your expenses
-</p>
-
-</div>
-
-</div>
-
-
-<div class="insight-list">
-
-
-<div class="insight">
-
-<i class="fa-solid fa-lightbulb"></i>
-
-<div>
-
-<strong>Food Spending</strong>
-
-<p>
-Food is one of your major expense categories.
-Consider setting a monthly food budget.
-</p>
-
-</div>
-
-</div>
-
-
-<div class="insight">
-
-<i class="fa-solid fa-chart-line"></i>
-
-<div>
-
-<strong>Positive Balance</strong>
-
-<p>
-Your current income is higher than your expenses,
-which supports healthy savings.
-</p>
-
-</div>
-
-</div>
-
-
-<div class="insight">
-
-<i class="fa-solid fa-piggy-bank"></i>
-
-<div>
-
-<strong>Savings Opportunity</strong>
-
-<p>
-You can improve your savings by reducing
-unnecessary shopping expenses.
-</p>
-
-</div>
-
-</div>
-
-
-</div>
-
+    <div class="insight-list">
+        <!-- Rendered dynamically by script.js -->
+    </div>
 </div>
 
 

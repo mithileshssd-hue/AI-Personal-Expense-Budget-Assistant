@@ -97,149 +97,94 @@ Sign Out
 
 
 <div class="topbar">
-
-<div>
-
-<h1>AI Financial Assistant</h1>
-
-<p>
-Get simple suggestions based on your financial activity.
-</p>
-
+    <div>
+        <h1>AI Financial Assistant</h1>
+        <p>Intelligent, data-driven financial advice and insights based on your spending.</p>
+    </div>
+    <a href="profile.html" class="profile-icon">
+        <i class="fa-solid fa-user"></i>
+    </a>
 </div>
-
-</div>
-
 
 <div class="ai-container">
+    <div class="ai-header">
+        <div class="ai-icon">
+            <i class="fa-solid fa-robot"></i>
+        </div>
+        <div>
+            <h2>Financial Intelligence Engine</h2>
+            <p>Real-time analytics and personalized suggestions based on your active financial data.</p>
+        </div>
+    </div>
 
+    <!-- LIVE RECOMMENDATION CARDS -->
+    <div class="ai-message">
+        <div class="ai-message-icon">
+            <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div>
+            <h3>Budget Recommendation</h3>
+            <p>Loading your budget health...</p>
+        </div>
+    </div>
 
-<div class="ai-header">
+    <div class="ai-message">
+        <div class="ai-message-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+            <h3>Expense Alert</h3>
+            <p>Analyzing your major expense categories...</p>
+        </div>
+    </div>
 
-<div class="ai-icon">
+    <div class="ai-message">
+        <div class="ai-message-icon">
+            <i class="fa-solid fa-piggy-bank"></i>
+        </div>
+        <div>
+            <h3>Savings Suggestion</h3>
+            <p>Calculating optimal savings targets...</p>
+        </div>
+    </div>
 
-<i class="fa-solid fa-robot"></i>
+    <!-- CONVERSATIONAL CHAT -->
+    <div class="ai-chat">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+            <h2>Ask the AI Assistant</h2>
+            <button type="button" class="cancel-btn small-btn" onclick="clearAIChat()" style="font-size:0.78rem; padding:5px 12px;">
+                <i class="fa-solid fa-rotate-left"></i> Clear Chat
+            </button>
+        </div>
+        <p>Ask anything about your personal expenses, budgets, savings, or spending trends.</p>
 
-</div>
+        <!-- Conversational Stream (User & Bot Messages) -->
+        <div id="aiChatStream" class="ai-chat-stream"></div>
 
-<div>
+        <div class="chat-input">
+            <input
+                type="text"
+                id="question"
+                placeholder="Example: Where am I spending the most? Am I over budget?"
+                onkeydown="if(event.key==='Enter') askAI()"
+            >
+            <button onclick="askAI()" title="Send query">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
 
-<h2>Financial Assistant</h2>
+        <div class="ai-quick-pills">
+            <button type="button" class="ai-pill" onclick="askAI('Where am I spending the most?')">🔥 Biggest Expense</button>
+            <button type="button" class="ai-pill" onclick="askAI('How much did I save?')">💰 How much did I save?</button>
+            <button type="button" class="ai-pill" onclick="askAI('Am I over my budget?')">🎯 Am I over my budget?</button>
+            <button type="button" class="ai-pill" onclick="askAI('How much did I spend on Food?')">🍔 Food spending</button>
+            <button type="button" class="ai-pill" onclick="askAI('Give me a spending summary')">📊 Spending summary</button>
+            <button type="button" class="ai-pill" onclick="askAI('Show my recent expenses')">⏱️ Recent expenses</button>
+            <button type="button" class="ai-pill" onclick="askAI('How can I reduce expenses?')">💡 How to save more?</button>
+        </div>
 
-<p>
-Here are some suggestions based on your current data.
-</p>
-
-</div>
-
-</div>
-
-
-<div class="ai-message">
-
-<div class="ai-message-icon">
-
-<i class="fa-solid fa-lightbulb"></i>
-
-</div>
-
-<div>
-
-<h3>Budget Recommendation</h3>
-
-<p>
-Your current expenses are lower than your income.
-Consider creating a monthly budget to maintain
-your savings rate.
-</p>
-
-</div>
-
-</div>
-
-
-<div class="ai-message">
-
-<div class="ai-message-icon">
-
-<i class="fa-solid fa-cart-shopping"></i>
-
-</div>
-
-<div>
-
-<h3>Shopping Alert</h3>
-
-<p>
-Shopping is a significant part of your current expenses.
-Review non-essential purchases before spending.
-</p>
-
-</div>
-
-</div>
-
-
-<div class="ai-message">
-
-<div class="ai-message-icon">
-
-<i class="fa-solid fa-piggy-bank"></i>
-
-</div>
-
-<div>
-
-<h3>Savings Suggestion</h3>
-
-<p>
-Your current savings are strong. Setting a specific
-savings goal can help you maintain this progress.
-</p>
-
-</div>
-
-</div>
-
-
-<div class="ai-chat">
-
-<h2>Ask the AI Assistant</h2>
-
-<p>
-Ask a question about your personal finances.
-</p>
-
-
-<div class="chat-input">
-
-<input
-type="text"
-id="question"
-placeholder="Example: Where am I spending the most? How can I save more?"
-onkeydown="if(event.key==='Enter') askAI()"
->
-
-<button onclick="askAI()">
-
-<i class="fa-solid fa-paper-plane"></i>
-
-</button>
-
-</div>
-
-<div class="ai-quick-pills">
-    <button type="button" class="ai-pill" onclick="askAI('Where am I spending the most?')">🔥 Biggest Expense</button>
-    <button type="button" class="ai-pill" onclick="askAI('How can I save more money?')">💡 How to save?</button>
-    <button type="button" class="ai-pill" onclick="askAI('How much did I spend on food?')">🍔 Food spending</button>
-    <button type="button" class="ai-pill" onclick="askAI('What is my financial status?')">📊 Financial Health</button>
-</div>
-
-<div id="aiAnswer" class="ai-answer"></div>
-
-</div>
-
-
+        <div id="aiAnswer" class="ai-answer"></div>
+    </div>
 </div>
 
 

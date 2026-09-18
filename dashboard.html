@@ -227,197 +227,75 @@
 </div>
 
 
+<!-- BUDGET PROGRESS SECTION -->
+<div id="dashboardBudgetSection"></div>
+
 <!-- QUICK ACTIONS -->
-
 <div class="section-header">
-
     <h2>Quick Actions</h2>
-
 </div>
 
+<div class="quick-actions" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+    <a href="javascript:void(0)" onclick="openTransactionModal('income')" class="quick-card">
+        <i class="fa-solid fa-plus" style="background:#dcfce7; color:#15803d;"></i>
+        <div>
+            <strong>Add Income</strong>
+            <span>Record incoming cash</span>
+        </div>
+    </a>
 
-<div class="quick-actions">
+    <a href="javascript:void(0)" onclick="openTransactionModal('expense')" class="quick-card">
+        <i class="fa-solid fa-receipt" style="background:#fee2e2; color:#dc2626;"></i>
+        <div>
+            <strong>Add Expense</strong>
+            <span>Log a purchase</span>
+        </div>
+    </a>
 
+    <a href="javascript:void(0)" onclick="openBudgetModal()" class="quick-card">
+        <i class="fa-solid fa-bullseye" style="background:#fef3c7; color:#d97706;"></i>
+        <div>
+            <strong>Set Budget</strong>
+            <span>Adjust limits</span>
+        </div>
+    </a>
 
-<a href="income.html" class="quick-card">
+    <a href="analytics.html" class="quick-card">
+        <i class="fa-solid fa-chart-pie"></i>
+        <div>
+            <strong>Analytics</strong>
+            <span>View 5 trend charts</span>
+        </div>
+    </a>
 
-    <i class="fa-solid fa-plus"></i>
-
-    <div>
-
-        <strong>Add Income</strong>
-
-        <span>Record new income</span>
-
-    </div>
-
-</a>
-
-
-<a href="expenses.html" class="quick-card">
-
-    <i class="fa-solid fa-receipt"></i>
-
-    <div>
-
-        <strong>Add Expense</strong>
-
-        <span>Record a new expense</span>
-
-    </div>
-
-</a>
-
-
-<a href="analytics.html" class="quick-card">
-
-    <i class="fa-solid fa-chart-pie"></i>
-
-    <div>
-
-        <strong>View Analytics</strong>
-
-        <span>Analyze your spending</span>
-
-    </div>
-
-</a>
-
-
-<a href="ai-assistant.html" class="quick-card">
-
-    <i class="fa-solid fa-robot"></i>
-
-    <div>
-
-        <strong>Ask AI Assistant</strong>
-
-        <span>Get financial suggestions</span>
-
-    </div>
-
-</a>
-
-
+    <a href="ai-assistant.html" class="quick-card">
+        <i class="fa-solid fa-robot" style="background:#ede9fe; color:#7c3aed;"></i>
+        <div>
+            <strong>Ask AI</strong>
+            <span>Financial advisor</span>
+        </div>
+    </a>
 </div>
 
+<!-- CATEGORY SPENDING BREAKDOWN -->
+<div id="dashboardCategorySection" class="content-card"></div>
 
 <!-- RECENT TRANSACTIONS -->
-
 <div class="content-card">
-
     <div class="card-heading">
-
         <div>
-
             <h2>Recent Transactions</h2>
-
-            <p>
-                Your latest income and expenses
-            </p>
-
+            <p>Your latest income and expenses</p>
         </div>
-
+        <div style="display:flex; gap:10px;">
+            <a href="expenses.html" class="cancel-btn small-btn" style="padding:6px 12px; font-size:0.8rem;">Expenses</a>
+            <a href="income.html" class="cancel-btn small-btn" style="padding:6px 12px; font-size:0.8rem;">Income</a>
+        </div>
     </div>
-
 
     <div class="transaction-list">
-
-
-        <div class="transaction">
-
-            <div class="transaction-icon income">
-
-                <i class="fa-solid fa-arrow-down"></i>
-
-            </div>
-
-            <div class="transaction-info">
-
-                <strong>Monthly Salary</strong>
-
-                <span>Income</span>
-
-            </div>
-
-            <strong class="amount income-text">
-                +₹50,000
-            </strong>
-
-        </div>
-
-
-        <div class="transaction">
-
-            <div class="transaction-icon expense">
-
-                <i class="fa-solid fa-cart-shopping"></i>
-
-            </div>
-
-            <div class="transaction-info">
-
-                <strong>Grocery Shopping</strong>
-
-                <span>Food</span>
-
-            </div>
-
-            <strong class="amount expense-text">
-                -₹3,250
-            </strong>
-
-        </div>
-
-
-        <div class="transaction">
-
-            <div class="transaction-icon expense">
-
-                <i class="fa-solid fa-shirt"></i>
-
-            </div>
-
-            <div class="transaction-info">
-
-                <strong>Clothing Purchase</strong>
-
-                <span>Shopping</span>
-
-            </div>
-
-            <strong class="amount expense-text">
-                -₹2,800
-            </strong>
-
-        </div>
-
-
-        <div class="transaction">
-
-            <div class="transaction-icon income">
-
-                <i class="fa-solid fa-laptop"></i>
-
-            </div>
-
-            <div class="transaction-info">
-
-                <strong>Freelance Income</strong>
-
-                <span>Other Income</span>
-
-            </div>
-
-            <strong class="amount income-text">
-                +₹10,000
-            </strong>
-
-        </div>
-
-
+        <!-- Rendered dynamically by script.js -->
     </div>
-
 </div>
 
 

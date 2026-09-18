@@ -97,171 +97,59 @@ Sign Out
 
 
 <div class="topbar">
-
-<div>
-
-<h1>Income</h1>
-
-<p>
-Manage and track all your income sources.
-</p>
-
+    <div>
+        <h1>Income</h1>
+        <p>Manage, filter, and track all your income sources.</p>
+    </div>
+    <a href="profile.html" class="profile-icon">
+        <i class="fa-solid fa-user"></i>
+    </a>
 </div>
-
-</div>
-
 
 <div class="page-actions">
-
-<button class="navy-btn small-btn" onclick="showIncomeMessage()">
-
-<i class="fa-solid fa-plus"></i>
-
-Add Income
-
-</button>
-
+    <button class="navy-btn small-btn" onclick="openTransactionModal('income')">
+        <i class="fa-solid fa-plus"></i> Add Income
+    </button>
 </div>
-
 
 <div class="summary-grid">
+    <div class="summary-card">
+        <div class="summary-icon income-icon">
+            <i class="fa-solid fa-money-bill-wave"></i>
+        </div>
+        <div>
+            <span>Total Income</span>
+            <h2>₹0</h2>
+            <small>Current Month</small>
+        </div>
+    </div>
 
-
-<div class="summary-card">
-
-<div class="summary-icon income-icon">
-
-<i class="fa-solid fa-money-bill-wave"></i>
-
+    <div class="summary-card">
+        <div class="summary-icon">
+            <i class="fa-solid fa-calendar-check"></i>
+        </div>
+        <div>
+            <span>Total Entries</span>
+            <h2>0</h2>
+            <small>Income records</small>
+        </div>
+    </div>
 </div>
 
-<div>
-
-<span>Total Income</span>
-
-<h2>₹60,000</h2>
-
-<small>This month</small>
-
-</div>
-
-</div>
-
-
-<div class="summary-card">
-
-<div class="summary-icon">
-
-<i class="fa-solid fa-calendar"></i>
-
-</div>
-
-<div>
-
-<span>Transactions</span>
-
-<h2>3</h2>
-
-<small>Income entries</small>
-
-</div>
-
-</div>
-
-</div>
-
+<!-- FILTER & SEARCH TOOLBAR -->
+<div id="incomeFilterToolbar" class="filter-toolbar"></div>
 
 <div class="content-card">
+    <div class="card-heading">
+        <div>
+            <h2>Income Transactions</h2>
+            <p>All recorded earnings, salary, and side income</p>
+        </div>
+    </div>
 
-<div class="card-heading">
-
-<div>
-
-<h2>Income Transactions</h2>
-
-<p>
-All recorded income entries
-</p>
-
-</div>
-
-</div>
-
-
-<div class="transaction-list">
-
-
-<div class="transaction">
-
-<div class="transaction-icon income">
-
-<i class="fa-solid fa-briefcase"></i>
-
-</div>
-
-<div class="transaction-info">
-
-<strong>Monthly Salary</strong>
-
-<span>Salary • 01 September</span>
-
-</div>
-
-<strong class="amount income-text">
-+₹50,000
-</strong>
-
-</div>
-
-
-<div class="transaction">
-
-<div class="transaction-icon income">
-
-<i class="fa-solid fa-laptop"></i>
-
-</div>
-
-<div class="transaction-info">
-
-<strong>Freelance Income</strong>
-
-<span>Freelance • 05 September</span>
-
-</div>
-
-<strong class="amount income-text">
-+₹10,000
-</strong>
-
-</div>
-
-
-<div class="transaction">
-
-<div class="transaction-icon income">
-
-<i class="fa-solid fa-graduation-cap"></i>
-
-</div>
-
-<div class="transaction-info">
-
-<strong>Other Income</strong>
-
-<span>Other • 08 September</span>
-
-</div>
-
-<strong class="amount income-text">
-+₹0
-</strong>
-
-</div>
-
-
-</div>
-
+    <div class="transaction-list">
+        <!-- Rendered dynamically by script.js -->
+    </div>
 </div>
 
 

@@ -171,13 +171,32 @@
                     <h2 id="profileName">Alex Johnson</h2>
                     <p id="profileEmail">alex.finance@gmail.com</p>
                     <span class="auth-badge">
-                        <i class="fa-brands fa-google"></i>
+                        <i class="fa-solid fa-shield-halved"></i>
                         Signed in with <span id="profileProvider">Google</span>
                     </span>
                 </div>
             </div>
 
-            <h3 style="color:var(--navy); margin-bottom: 14px; font-size: 1.1rem;">Preferences</h3>
+            <!-- EDIT PROFILE DETAILS -->
+            <h3 style="color:var(--navy); margin-bottom: 14px; font-size: 1.1rem;">Personal Profile</h3>
+            <form id="profileEditForm" onsubmit="saveProfileDetails(event)" style="margin-bottom: 24px;">
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <label for="editFullName"><i class="fa-solid fa-user"></i> Full Name</label>
+                        <input type="text" id="editFullName" placeholder="Your Name" required>
+                    </div>
+
+                    <div class="setting-item">
+                        <label for="editIncomeTarget"><i class="fa-solid fa-coins"></i> Monthly Income Target</label>
+                        <input type="number" id="editIncomeTarget" placeholder="60000" min="0">
+                    </div>
+                </div>
+                <button type="submit" class="navy-btn small-btn" style="margin-top: 14px;">
+                    <i class="fa-solid fa-check"></i> Save Profile Details
+                </button>
+            </form>
+
+            <h3 style="color:var(--navy); margin-bottom: 14px; font-size: 1.1rem;">Financial Preferences</h3>
             <div class="settings-grid">
                 <div class="setting-item">
                     <label for="currencySelect"><i class="fa-solid fa-globe"></i> Display Currency</label>
@@ -191,10 +210,37 @@
                 </div>
 
                 <div class="setting-item">
-                    <label><i class="fa-solid fa-file-export"></i> Backup & Export</label>
-                    <button type="button" class="navy-btn small-btn" onclick="exportFinancialData()" style="width:100%; justify-content:center;">
-                        <i class="fa-solid fa-download"></i> Export Data as JSON
+                    <label><i class="fa-solid fa-bullseye"></i> Monthly Budget Target</label>
+                    <button type="button" class="navy-btn small-btn" onclick="openBudgetModal()" style="width:100%; justify-content:center;">
+                        <i class="fa-solid fa-sliders"></i> Configure Category Budgets
                     </button>
+                </div>
+
+                <div class="setting-item">
+                    <label><i class="fa-solid fa-bell"></i> Notification Preferences</label>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
+                        <label style="font-weight:normal; font-size:0.85rem; display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" id="prefBudgetAlert" checked onchange="saveNotificationPrefs()">
+                            <span>Alert when spending exceeds 70% of budget</span>
+                        </label>
+                        <label style="font-weight:normal; font-size:0.85rem; display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" id="prefWeeklyDigest" onchange="saveNotificationPrefs()">
+                            <span>Weekly AI savings breakdown</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-item">
+                    <label><i class="fa-solid fa-file-export"></i> Backup & Export</label>
+                    <div style="display:flex; gap:8px;">
+                        <button type="button" class="navy-btn small-btn" onclick="exportFinancialData()" style="flex:1; justify-content:center; font-size:0.82rem;">
+                            <i class="fa-solid fa-download"></i> Export JSON
+                        </button>
+                        <label class="cancel-btn small-btn" style="flex:1; text-align:center; cursor:pointer; font-size:0.82rem; display:inline-flex; align-items:center; justify-content:center;">
+                            <i class="fa-solid fa-upload" style="margin-right:6px;"></i> Import JSON
+                            <input type="file" accept=".json" onchange="importFinancialData(event)" style="display:none;">
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
@@ -202,7 +248,7 @@
         <div class="profile-card danger-zone">
             <h3><i class="fa-solid fa-triangle-exclamation"></i> Data Management</h3>
             <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 16px;">
-                Reset sample transactions or clear all your local logs to start fresh.
+                Restore sample transactions or wipe local data to start fresh.
             </p>
             <div style="display:flex; gap:12px; flex-wrap:wrap;">
                 <button type="button" class="cancel-btn" onclick="resetSampleData()">
@@ -220,43 +266,59 @@
 
 <script src="script.js"></script>
 <script>
-function updateCurrencySetting(sym) {
+document.addEventListener('DOMContentLoaded', () => {
+    const user = AuthManager.getCurrentUser() || { name: 'Alex Johnson', email: 'alex.finance@gmail.com' };
+    const nameInput = document.getElementById('editFullName');
+    const incomeInput = document.getElementById('editIncomeTarget');
     const s = FinanceStore.getSettings();
-    s.currencySymbol = sym;
-    FinanceStore.saveSettings(s);
-    showToast(`Currency updated to ${sym}`, 'success');
-}
 
-function exportFinancialData() {
-    const data = {
-        user: AuthManager.getCurrentUser(),
-        transactions: FinanceStore.getTransactions(),
-        summary: FinanceStore.getSummary(),
-        exportedAt: new Date().toISOString()
+    if (nameInput) nameInput.value = user.name || '';
+    if (incomeInput) incomeInput.value = s.monthlyIncomeTarget || 60000;
+
+    const budgetAlertCb = document.getElementById('prefBudgetAlert');
+    const weeklyCb = document.getElementById('prefWeeklyDigest');
+    if (budgetAlertCb) budgetAlertCb.checked = s.notifyBudgetLimit !== false;
+    if (weeklyCb) weeklyCb.checked = !!s.notifyWeeklyDigest;
+});
+
+function saveProfileDetails(e) {
+    e.preventDefault();
+    const currentUser = AuthManager.getCurrentUser();
+    const user = currentUser || {
+        id: 'demo_alex',
+        name: 'Alex Johnson',
+        email: 'alex.finance@gmail.com',
+        authProvider: 'Demo',
+        picture: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80',
+        createdAt: new Date().toISOString()
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `SmartFinance_Export_${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    showToast('Financial data exported successfully!', 'success');
+    if (!user.id) user.id = 'demo_alex';
+
+    const newName = document.getElementById('editFullName').value.trim();
+    const newIncome = parseFloat(document.getElementById('editIncomeTarget').value) || 60000;
+
+    if (!newName) {
+        showToast('Please enter your full name.', 'error');
+        return;
+    }
+
+    user.name = newName;
+    AuthManager.setCurrentUser(user);
+
+    const s = FinanceStore.getSettings();
+    s.monthlyIncomeTarget = newIncome;
+    FinanceStore.saveSettings(s);
+
+    showToast('Profile updated successfully!', 'success');
+    setTimeout(() => location.reload(), 400);
 }
 
-function resetSampleData() {
-    if (confirm('Restore default sample transactions? This will overwrite recent modifications.')) {
-        FinanceStore.resetToDefault();
-        showToast('Sample data restored.', 'info');
-        setTimeout(() => location.reload(), 400);
-    }
-}
-
-function clearAllData() {
-    if (confirm('Are you sure you want to clear ALL transaction records? This action cannot be undone.')) {
-        FinanceStore.clearAll();
-        showToast('All transaction records cleared.', 'error');
-        setTimeout(() => location.reload(), 400);
-    }
+function saveNotificationPrefs() {
+    const s = FinanceStore.getSettings();
+    s.notifyBudgetLimit = document.getElementById('prefBudgetAlert').checked;
+    s.notifyWeeklyDigest = document.getElementById('prefWeeklyDigest').checked;
+    FinanceStore.saveSettings(s);
+    showToast('Preferences saved.', 'info');
 }
 </script>
 </body>
