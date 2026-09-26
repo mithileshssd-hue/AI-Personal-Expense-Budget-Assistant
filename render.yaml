@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: smartfinance-webapp
+    env: static
+    buildCommand: ""
+    staticPublishPath: .
+    envVars:
+      - key: API_BASE_URL
+        value: https://smartfinance-backend.workers.dev

@@ -1,15 +1,15 @@
 @echo off
-title SmartFinance - Local Web Server
+title SmartFinance - Local Development Server
 cls
 echo ================================================================
-echo   SmartFinance - Starting Local Development Server
+echo   SmartFinance - Starting Local Development Server & API
 echo ================================================================
 echo.
-echo  Google OAuth requires an HTTP web origin (http://localhost:5500)
-echo  instead of opening files directly via file://
+echo  Starting Cloudflare D1 Worker API Backend at http://127.0.0.1:8787 ...
+start "SmartFinance API Worker" node "%~dp0node_modules\wrangler\bin\wrangler.js" dev --port 8787
 echo.
-echo  Starting server at: http://localhost:5500
+echo  Starting Frontend Web Server at http://localhost:5500 ...
 echo.
-start http://localhost:5500/index.html
+start http://localhost:5500/login.html
 python -m http.server 5500
 pause

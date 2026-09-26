@@ -1,0 +1,9 @@
+{
+  "appId": "com.smartfinance.app",
+  "appName": "SmartFinance",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
+}
