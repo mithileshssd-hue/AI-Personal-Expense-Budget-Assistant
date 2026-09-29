@@ -1784,43 +1784,56 @@ function renderExpensesPage() {
     }
 
     if (filterContainer) {
-        filterContainer.innerHTML = `
-            <div class="filter-search-wrap">
-                <div class="filter-search-box">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="expenseSearchInput" placeholder="Search expenses by title or note..." value="${escapeHTML(expenseFilterState.search)}" oninput="onExpenseSearchChange(this.value)">
-                </div>
-            </div>
-
-            <div class="filter-controls-wrap">
-                <div class="filter-group">
-                    <label><i class="fa-solid fa-layer-group"></i> Category:</label>
-                    <select class="filter-select" id="expenseCategoryFilter" onchange="onExpenseCategoryChange(this.value)">
-                        <option value="ALL">All Categories</option>
-                        ${EXPENSE_CATEGORIES.map(c => `<option value="${c}" ${expenseFilterState.category === c ? 'selected' : ''}>${c}</option>`).join('')}
-                    </select>
+        if (!filterContainer.innerHTML.trim() || !document.getElementById('expenseSearchInput')) {
+            filterContainer.innerHTML = `
+                <div class="filter-search-wrap">
+                    <div class="filter-search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="expenseSearchInput" placeholder="Search expenses by title or note..." value="${escapeHTML(expenseFilterState.search)}" oninput="onExpenseSearchChange(this.value)">
+                    </div>
                 </div>
 
-                <div class="filter-group">
-                    <label><i class="fa-solid fa-calendar"></i> Date:</label>
-                    <select class="filter-select" id="expenseDateFilter" onchange="onExpenseDateChange(this.value)">
-                        <option value="ALL" ${expenseFilterState.timeframe === 'ALL' ? 'selected' : ''}>All Time</option>
-                        <option value="THIS_MONTH" ${expenseFilterState.timeframe === 'THIS_MONTH' ? 'selected' : ''}>This Month</option>
-                        <option value="LAST_30" ${expenseFilterState.timeframe === 'LAST_30' ? 'selected' : ''}>Last 30 Days</option>
-                    </select>
-                </div>
+                <div class="filter-controls-wrap">
+                    <div class="filter-group">
+                        <label><i class="fa-solid fa-layer-group"></i> Category:</label>
+                        <select class="filter-select" id="expenseCategoryFilter" onchange="onExpenseCategoryChange(this.value)">
+                            <option value="ALL">All Categories</option>
+                            ${EXPENSE_CATEGORIES.map(c => `<option value="${c}" ${expenseFilterState.category === c ? 'selected' : ''}>${c}</option>`).join('')}
+                        </select>
+                    </div>
 
-                <div class="filter-group">
-                    <label><i class="fa-solid fa-arrow-down-short-wide"></i> Sort:</label>
-                    <select class="filter-select" id="expenseSortFilter" onchange="onExpenseSortChange(this.value)">
-                        <option value="NEWEST" ${expenseFilterState.sort === 'NEWEST' ? 'selected' : ''}>Newest First</option>
-                        <option value="OLDEST" ${expenseFilterState.sort === 'OLDEST' ? 'selected' : ''}>Oldest First</option>
-                        <option value="HIGHEST" ${expenseFilterState.sort === 'HIGHEST' ? 'selected' : ''}>Highest Amount</option>
-                        <option value="LOWEST" ${expenseFilterState.sort === 'LOWEST' ? 'selected' : ''}>Lowest Amount</option>
-                    </select>
+                    <div class="filter-group">
+                        <label><i class="fa-solid fa-calendar"></i> Date:</label>
+                        <select class="filter-select" id="expenseDateFilter" onchange="onExpenseDateChange(this.value)">
+                            <option value="ALL" ${expenseFilterState.timeframe === 'ALL' ? 'selected' : ''}>All Time</option>
+                            <option value="THIS_MONTH" ${expenseFilterState.timeframe === 'THIS_MONTH' ? 'selected' : ''}>This Month</option>
+                            <option value="LAST_30" ${expenseFilterState.timeframe === 'LAST_30' ? 'selected' : ''}>Last 30 Days</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label><i class="fa-solid fa-arrow-down-short-wide"></i> Sort:</label>
+                        <select class="filter-select" id="expenseSortFilter" onchange="onExpenseSortChange(this.value)">
+                            <option value="NEWEST" ${expenseFilterState.sort === 'NEWEST' ? 'selected' : ''}>Newest First</option>
+                            <option value="OLDEST" ${expenseFilterState.sort === 'OLDEST' ? 'selected' : ''}>Oldest First</option>
+                            <option value="HIGHEST" ${expenseFilterState.sort === 'HIGHEST' ? 'selected' : ''}>Highest Amount</option>
+                            <option value="LOWEST" ${expenseFilterState.sort === 'LOWEST' ? 'selected' : ''}>Lowest Amount</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            const searchInput = document.getElementById('expenseSearchInput');
+            if (searchInput && document.activeElement !== searchInput) {
+                searchInput.value = expenseFilterState.search;
+            }
+            const catSelect = document.getElementById('expenseCategoryFilter');
+            if (catSelect) catSelect.value = expenseFilterState.category;
+            const dateSelect = document.getElementById('expenseDateFilter');
+            if (dateSelect) dateSelect.value = expenseFilterState.timeframe;
+            const sortSelect = document.getElementById('expenseSortFilter');
+            if (sortSelect) sortSelect.value = expenseFilterState.sort;
+        }
     }
 
     let filtered = allExpenses.filter(tx => {
@@ -1949,43 +1962,56 @@ function renderIncomePage() {
     }
 
     if (filterContainer) {
-        filterContainer.innerHTML = `
-            <div class="filter-search-wrap">
-                <div class="filter-search-box">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="incomeSearchInput" placeholder="Search income by title or source..." value="${escapeHTML(incomeFilterState.search)}" oninput="onIncomeSearchChange(this.value)">
-                </div>
-            </div>
-
-            <div class="filter-controls-wrap">
-                <div class="filter-group">
-                    <label><i class="fa-solid fa-money-bill-wave"></i> Source:</label>
-                    <select class="filter-select" id="incomeSourceFilter" onchange="onIncomeSourceChange(this.value)">
-                        <option value="ALL">All Sources</option>
-                        ${INCOME_SOURCES.map(s => `<option value="${s}" ${incomeFilterState.source === s ? 'selected' : ''}>${s}</option>`).join('')}
-                    </select>
+        if (!filterContainer.innerHTML.trim() || !document.getElementById('incomeSearchInput')) {
+            filterContainer.innerHTML = `
+                <div class="filter-search-wrap">
+                    <div class="filter-search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="incomeSearchInput" placeholder="Search income by title or source..." value="${escapeHTML(incomeFilterState.search)}" oninput="onIncomeSearchChange(this.value)">
+                    </div>
                 </div>
 
-                <div class="filter-group">
-                    <label><i class="fa-solid fa-calendar"></i> Date:</label>
-                    <select class="filter-select" id="incomeDateFilter" onchange="onIncomeDateChange(this.value)">
-                        <option value="ALL" ${incomeFilterState.timeframe === 'ALL' ? 'selected' : ''}>All Time</option>
-                        <option value="THIS_MONTH" ${incomeFilterState.timeframe === 'THIS_MONTH' ? 'selected' : ''}>This Month</option>
-                        <option value="LAST_30" ${incomeFilterState.timeframe === 'LAST_30' ? 'selected' : ''}>Last 30 Days</option>
-                    </select>
-                </div>
+                <div class="filter-controls-wrap">
+                    <div class="filter-group">
+                        <label><i class="fa-solid fa-money-bill-wave"></i> Source:</label>
+                        <select class="filter-select" id="incomeSourceFilter" onchange="onIncomeSourceChange(this.value)">
+                            <option value="ALL">All Sources</option>
+                            ${INCOME_SOURCES.map(s => `<option value="${s}" ${incomeFilterState.source === s ? 'selected' : ''}>${s}</option>`).join('')}
+                        </select>
+                    </div>
 
-                <div class="filter-group">
-                    <label><i class="fa-solid fa-arrow-down-short-wide"></i> Sort:</label>
-                    <select class="filter-select" id="incomeSortFilter" onchange="onIncomeSortChange(this.value)">
-                        <option value="NEWEST" ${incomeFilterState.sort === 'NEWEST' ? 'selected' : ''}>Newest First</option>
-                        <option value="OLDEST" ${incomeFilterState.sort === 'OLDEST' ? 'selected' : ''}>Oldest First</option>
-                        <option value="HIGHEST" ${incomeFilterState.sort === 'HIGHEST' ? 'selected' : ''}>Highest Amount</option>
-                        <option value="LOWEST" ${incomeFilterState.sort === 'LOWEST' ? 'selected' : ''}>Lowest Amount</option>
-                    </select>
+                    <div class="filter-group">
+                        <label><i class="fa-solid fa-calendar"></i> Date:</label>
+                        <select class="filter-select" id="incomeDateFilter" onchange="onIncomeDateChange(this.value)">
+                            <option value="ALL" ${incomeFilterState.timeframe === 'ALL' ? 'selected' : ''}>All Time</option>
+                            <option value="THIS_MONTH" ${incomeFilterState.timeframe === 'THIS_MONTH' ? 'selected' : ''}>This Month</option>
+                            <option value="LAST_30" ${incomeFilterState.timeframe === 'LAST_30' ? 'selected' : ''}>Last 30 Days</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label><i class="fa-solid fa-arrow-down-short-wide"></i> Sort:</label>
+                        <select class="filter-select" id="incomeSortFilter" onchange="onIncomeSortChange(this.value)">
+                            <option value="NEWEST" ${incomeFilterState.sort === 'NEWEST' ? 'selected' : ''}>Newest First</option>
+                            <option value="OLDEST" ${incomeFilterState.sort === 'OLDEST' ? 'selected' : ''}>Oldest First</option>
+                            <option value="HIGHEST" ${incomeFilterState.sort === 'HIGHEST' ? 'selected' : ''}>Highest Amount</option>
+                            <option value="LOWEST" ${incomeFilterState.sort === 'LOWEST' ? 'selected' : ''}>Lowest Amount</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            const searchInput = document.getElementById('incomeSearchInput');
+            if (searchInput && document.activeElement !== searchInput) {
+                searchInput.value = incomeFilterState.search;
+            }
+            const sourceSelect = document.getElementById('incomeSourceFilter');
+            if (sourceSelect) sourceSelect.value = incomeFilterState.source;
+            const dateSelect = document.getElementById('incomeDateFilter');
+            if (dateSelect) dateSelect.value = incomeFilterState.timeframe;
+            const sortSelect = document.getElementById('incomeSortFilter');
+            if (sortSelect) sortSelect.value = incomeFilterState.sort;
+        }
     }
 
     let filtered = allIncome.filter(tx => {
@@ -1993,7 +2019,8 @@ function renderIncomePage() {
             const term = incomeFilterState.search.toLowerCase();
             const matchesTitle = tx.title && tx.title.toLowerCase().includes(term);
             const matchesNotes = tx.notes && tx.notes.toLowerCase().includes(term);
-            if (!matchesTitle && !matchesNotes) return false;
+            const matchesCategory = tx.category && tx.category.toLowerCase().includes(term);
+            if (!matchesTitle && !matchesNotes && !matchesCategory) return false;
         }
         if (incomeFilterState.source !== 'ALL' && tx.category !== incomeFilterState.source) {
             return false;
