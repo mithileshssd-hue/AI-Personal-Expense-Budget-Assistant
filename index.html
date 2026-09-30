@@ -34,13 +34,11 @@
         </nav>
 
         <div class="nav-actions">
-
-    <a href="login.html" class="login-btn">
-        <i class="fa-solid fa-user"></i>
-        Login / Sign Up
-    </a>
-
-</div>
+            <a href="login.html" class="login-btn">
+                <i class="fa-solid fa-user"></i>
+                Login / Sign Up
+            </a>
+        </div>
 
     </header>
 
@@ -74,13 +72,10 @@
 
                 <!-- Buttons -->
                 <div class="hero-buttons">
-
-    <a href="register.html" class="primary-btn">
-        <i class="fa-solid fa-user"></i>
-        Get Started
-    </a>
-
-</div>
+                    <a href="register.html" class="primary-btn">
+                        <i class="fa-solid fa-rocket"></i> Get Started
+                    </a>
+                </div>
 
             </div>
 
@@ -276,23 +271,6 @@
         if (heroBal) heroBal.textContent = formatCurrency(summary.balance);
         if (heroInc) heroInc.textContent = formatCurrency(summary.totalIncome);
         if (heroExp) heroExp.textContent = formatCurrency(summary.totalExpenses);
-
-        const user = AuthManager.getCurrentUser();
-        if (user) {
-            const navActions = document.querySelector('.nav-actions');
-            if (navActions) {
-                navActions.innerHTML = `
-                    <a href="dashboard.html" class="primary-btn" style="padding: 9px 18px; border-radius: 20px;">
-                        <i class="fa-solid fa-gauge"></i> Open Dashboard
-                    </a>
-                `;
-            }
-            const heroBtn = document.querySelector('.hero-buttons a');
-            if (heroBtn) {
-                heroBtn.href = "dashboard.html";
-                heroBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> Go to My Dashboard';
-            }
-        }
     });
 </script>
 </body>

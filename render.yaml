@@ -6,4 +6,4 @@ services:
     staticPublishPath: .
     envVars:
       - key: API_BASE_URL
-        value: https://smartfinance-backend.workers.dev
+        value: https://smartfinance-backend.smartfinance-app.workers.dev

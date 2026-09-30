@@ -1,5 +1,21 @@
+# Dependencies
 node_modules/
+
+# Local Dev State & Builds
 .wrangler/
 scratch/
 SmartFinance_Production.zip
 *.log
+
+# Android Generated Files & Build Outputs
+android/.gradle/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+android/*/build/
+android/local.properties
+android/*.iml
+android/app/*.iml
+
+# System Noise
+.DS_Store
+Thumbs.db

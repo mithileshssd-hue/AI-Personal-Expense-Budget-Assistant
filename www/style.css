@@ -167,9 +167,9 @@ img {
     justify-content: center;
     gap: 9px;
 
-    padding: 11px 20px;
+    padding: 11px 22px;
 
-    min-width: 130px;
+    min-width: 140px;
 
     background: white;
 
@@ -179,8 +179,10 @@ img {
 
     border-radius: 25px;
 
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     font-weight: 600;
+
+    text-decoration: none;
 
     transition: 0.25s ease;
 }
@@ -188,10 +190,12 @@ img {
 .login-btn:hover {
     background: #f5f9fc;
     border-color: var(--navy);
+    color: var(--navy);
 }
 
 .login-btn i {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    color: var(--navy);
 }
 
 
@@ -199,23 +203,34 @@ img {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
 
-    padding: 11px 20px;
+    padding: 9px 20px;
 
     background: var(--teal);
 
     color: white;
 
-    border-radius: 7px;
+    border: 1px solid var(--teal);
+
+    border-radius: 25px;
 
     font-size: 0.88rem;
     font-weight: 600;
+
+    text-decoration: none;
 
     transition: 0.25s ease;
 }
 
 .register-btn:hover {
     background: var(--teal-dark);
+    border-color: var(--teal-dark);
+    color: white;
+}
+
+.register-btn i {
+    font-size: 0.85rem;
 }
 
 

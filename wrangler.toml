@@ -7,6 +7,6 @@ ENVIRONMENT = "production"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "smartfinance-db"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_name = "smart-finance"
+database_id = "e97d4fb7-a757-4ccd-af4c-8fe649f8090b"
 migrations_dir = "migrations"

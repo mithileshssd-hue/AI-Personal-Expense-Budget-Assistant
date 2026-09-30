@@ -18,7 +18,6 @@
 const GOOGLE_CLIENT_ID = "39431135647-i9jnuuh2k6b25c4u07bvvoi1rc79v52f.apps.googleusercontent.com";
 
 const STORAGE_KEYS = {
-    USERS: 'sf_users_directory',
     CURRENT_USER: 'sf_current_user',
     REMEMBER_EMAIL: 'sf_remember_email',
     AI_CHAT_HISTORY: 'sf_ai_chat_history'
@@ -186,7 +185,7 @@ const DEFAULT_BUDGETS = {
 // API REQUEST HELPER & WORKER INTERACTION
 // =========================================================
 
-const PRODUCTION_API_URL = 'https://smartfinance-backend.workers.dev';
+const PRODUCTION_API_URL = 'https://smartfinance-backend.smartfinance-app.workers.dev';
 
 const isCapacitorNative = Boolean(
     window.Capacitor || 
@@ -453,7 +452,7 @@ const AuthManager = {
             this.clearSession();
             const msg = (res.status === 0)
                 ? 'Unable to connect to the server. Please try again.'
-                : 'Invalid email or password. Please check your credentials and try again.';
+                : (res.error || 'Invalid email or password. Please check your credentials and try again.');
             return { success: false, message: msg };
         }
     },
@@ -524,25 +523,41 @@ const FinanceStore = {
             if (expRes.ok && expRes.data && expRes.data.expenses) {
                 this.expenses = expRes.data.expenses;
             } else if (!expRes.ok) {
-                showToast(expRes.error || 'Failed to fetch expenses from server.', 'error');
+                const msg = (expRes.status === 0)
+                    ? 'Unable to connect to the server. Please try again.'
+                    : (expRes.error || 'Failed to fetch expenses from server.');
+                showToast(msg, 'error');
+                this.expenses = [];
             }
 
             if (incRes.ok && incRes.data && incRes.data.income) {
                 this.income = incRes.data.income;
             } else if (!incRes.ok) {
-                showToast(incRes.error || 'Failed to fetch income from server.', 'error');
+                const msg = (incRes.status === 0)
+                    ? 'Unable to connect to the server. Please try again.'
+                    : (incRes.error || 'Failed to fetch income from server.');
+                showToast(msg, 'error');
+                this.income = [];
             }
 
             if (bgRes.ok && bgRes.data && bgRes.data.budgets) {
                 this.budgets = bgRes.data.budgets;
             } else if (!bgRes.ok) {
-                showToast(bgRes.error || 'Failed to fetch budgets from server.', 'error');
+                const msg = (bgRes.status === 0)
+                    ? 'Unable to connect to the server. Please try again.'
+                    : (bgRes.error || 'Failed to fetch budgets from server.');
+                showToast(msg, 'error');
+                this.budgets = { totalBudget: 35000, categories: {} };
             }
 
             this.isLoaded = true;
         } catch (e) {
-            console.error('Error loading financial data from API:', e);
-            showToast('Unable to connect to financial server. Please try again.', 'error');
+            console.error('Error loading financial data:', e);
+            showToast('Unable to connect to the server. Please try again.', 'error');
+            this.expenses = [];
+            this.income = [];
+            this.budgets = { totalBudget: 35000, categories: {} };
+            this.isLoaded = true;
         }
     },
 
