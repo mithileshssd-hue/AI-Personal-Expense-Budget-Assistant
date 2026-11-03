@@ -20,9 +20,11 @@ function getCorsHeaders(request) {
     let allowOrigin = null;
     if (allowedOrigins.includes(origin)) {
         allowOrigin = origin;
-    } else if (origin && origin.endsWith('.onrender.com')) {
+    } else if (origin && (origin.endsWith('.onrender.com') || origin.includes('render.com'))) {
         allowOrigin = origin;
-    } else if (!origin) {
+    } else if (origin) {
+        allowOrigin = origin;
+    } else {
         allowOrigin = 'https://smartfinance-webapp.onrender.com';
     }
 

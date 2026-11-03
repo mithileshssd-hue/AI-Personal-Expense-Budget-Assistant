@@ -1875,11 +1875,13 @@ function updateUserNavUI(activeUser) {
         menu.className = 'topbar-user-dropdown';
         document.body.appendChild(menu);
 
-        document.addEventListener('click', (e) => {
+        const handleOutside = (e) => {
             if (menu.classList.contains('active') && !menu.contains(e.target) && !profileLink.contains(e.target)) {
                 menu.classList.remove('active');
             }
-        });
+        };
+        document.addEventListener('click', handleOutside);
+        document.addEventListener('pointerdown', handleOutside);
     }
 
     const allUsers = AuthManager.getUsers();
@@ -1917,9 +1919,32 @@ function updateUserNavUI(activeUser) {
     `;
 }
 
-function toggleUserDropdown() {
-    const menu = document.getElementById('topbarUserDropdown');
-    if (menu) menu.classList.toggle('active');
+function toggleUserDropdown(e) {
+    if (e) {
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+        if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    }
+    let menu = document.getElementById('topbarUserDropdown');
+    if (!menu) {
+        updateUserNavUI();
+        menu = document.getElementById('topbarUserDropdown');
+    }
+    if (!menu) return;
+
+    const pill = document.getElementById('topbarUserPill') || document.querySelector('.topbar-user-pill');
+    if (pill) {
+        const rect = pill.getBoundingClientRect();
+        menu.style.top = `${Math.round(rect.bottom + 6)}px`;
+        if (window.innerWidth <= 768) {
+            menu.style.right = '12px';
+            menu.style.left = 'auto';
+        } else {
+            const rightSpace = window.innerWidth - rect.right;
+            menu.style.right = `${Math.max(16, rightSpace)}px`;
+            menu.style.left = 'auto';
+        }
+    }
+    menu.classList.toggle('active');
 }
 window.toggleUserDropdown = toggleUserDropdown;
 
@@ -3722,6 +3747,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const existingBackdrop = document.getElementById('sfSidebarBackdrop');
     if (existingBackdrop) existingBackdrop.classList.remove('active');
 
+    // Initialize profile dropdown early with cached user info so profile button works immediately
+    const cachedUser = AuthManager.getCurrentUser();
+    if (cachedUser) {
+        updateUserNavUI(cachedUser);
+    }
+
     // Android Capacitor Back Button integration
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
         window.Capacitor.Plugins.App.addListener('backButton', ({ canGoBack }) => {
@@ -3802,6 +3833,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <a href="ai-assistant.html" class="bottom-nav-item ${path.includes('ai-assistant') ? 'active' : ''}">
                     <i class="fa-solid fa-robot"></i>
                     <span>AI Bot</span>
+                </a>
+                <a href="profile.html" class="bottom-nav-item ${path.includes('profile') ? 'active' : ''}">
+                    <i class="fa-solid fa-user"></i>
+                    <span>Profile</span>
                 </a>
             `;
             document.body.appendChild(bottomNav);

@@ -4222,6 +4222,8 @@ html {
     overflow-x: hidden;
     overflow-y: auto;
     scroll-behavior: smooth;
+    scroll-padding-top: 84px;
+    scroll-padding-bottom: 84px;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
 }
@@ -4295,9 +4297,19 @@ textarea {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 998;
+    background: var(--background, #f3f8fb);
+    width: calc(100% + 90px);
+    margin-top: -35px;
+    margin-left: -45px;
+    margin-right: -45px;
+    padding: 20px 45px 16px 45px;
     margin-bottom: 24px;
-    position: relative;
-    width: 100%;
+    border-bottom: 1px solid rgba(220, 229, 236, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     box-sizing: border-box;
 }
 
@@ -4360,14 +4372,44 @@ textarea {
     box-sizing: border-box;
 }
 
-/* User dropdown responsive positioning */
+/* Topbar & User dropdown responsive positioning */
 @media (max-width: 768px) {
-    .topbar-user-dropdown {
-        top: calc(100% + 8px) !important;
+    .topbar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
         right: 0 !important;
+        width: 100% !important;
+        height: 62px !important;
+        max-height: 62px !important;
+        z-index: 9980 !important;
+        background: #ffffff !important;
+        padding: max(8px, env(safe-area-inset-top, 0px)) 14px 8px 14px !important;
+        margin: 0 !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06) !important;
+        box-sizing: border-box !important;
+        touch-action: none !important;
+    }
+
+    .topbar-title-wrap h1 {
+        font-size: 1.18rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .topbar-title-wrap p {
+        display: none !important;
+    }
+
+    .topbar-user-dropdown {
+        top: calc(62px + max(4px, env(safe-area-inset-top, 0px))) !important;
+        right: 12px !important;
         left: auto !important;
-        width: min(300px, calc(100vw - 28px)) !important;
-        max-width: calc(100vw - 28px) !important;
+        width: min(300px, calc(100vw - 24px)) !important;
+        max-width: calc(100vw - 24px) !important;
+        z-index: 100005 !important;
     }
 }
 
@@ -4499,7 +4541,7 @@ textarea {
     .dashboard-main {
         width: 100% !important;
         margin-left: 0 !important;
-        padding: max(16px, env(safe-area-inset-top)) 14px calc(96px + env(safe-area-inset-bottom, 0px)) 14px !important;
+        padding: calc(76px + env(safe-area-inset-top, 0px)) 14px calc(96px + env(safe-area-inset-bottom, 0px)) 14px !important;
         box-sizing: border-box !important;
     }
 
@@ -4532,6 +4574,9 @@ textarea {
         justify-content: space-around !important;
         align-items: center !important;
         box-sizing: border-box !important;
+        touch-action: none !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
     }
 
     .bottom-nav-item {
