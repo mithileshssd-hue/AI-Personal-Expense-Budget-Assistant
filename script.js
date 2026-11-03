@@ -1206,8 +1206,17 @@ window.toggleMobileSidebar = function(forceClose = false) {
 };
 
 // =========================================================
-// 4B. COMPREHENSIVE TOUCH SWIPE GESTURE ENGINE
+// 4B. COMPREHENSIVE TOUCH SWIPE GESTURE ENGINE & MODAL CLEANUP
 // =========================================================
+
+window.closeAllModals = function() {
+    document.querySelectorAll('.sf-modal-overlay.active, .modal-backdrop.active').forEach(m => {
+        m.classList.remove('active');
+    });
+    document.body.classList.remove('modal-open');
+    if (typeof currentEditingTransactionId !== 'undefined') currentEditingTransactionId = null;
+    if (typeof currentEditingSavingsId !== 'undefined') currentEditingSavingsId = null;
+};
 
 function initSwipeGestures() {
     let touchStartX = 0;
@@ -1266,58 +1275,61 @@ function initSwipeGestures() {
         const absY = Math.abs(deltaY);
         const elapsedTime = Date.now() - touchStartTime;
 
+        // 0. TAP DETECTION: If finger moved less than 12px, it is a pure tap.
+        // Never hijack taps; let standard browser click and touch events proceed instantly.
+        if (absX < 12 && absY < 12) return;
+
         // Must be a decisive gesture within 650ms
         if (elapsedTime > 650) return;
 
         const sidebar = document.querySelector('.sidebar');
         const isDrawerOpen = sidebar && sidebar.classList.contains('open');
 
-        // 1. DRAWER SWIPE GESTURES:
+        // 1. VERTICAL SCROLL PRIORITY:
+        // If vertical movement exceeds 28px or dominates horizontal, the user is scrolling vertically.
+        // Never trigger horizontal page or tab navigation when scrolling!
+        if (absY > 28 || (absY >= absX * 0.7 && !isDrawerOpen)) {
+            // Check for intentional modal pull-down to dismiss (drag header down > 70px)
+            const activeModalBox = document.querySelector('.sf-modal-overlay.active .sf-modal-box, .modal-backdrop.active .modal-card');
+            if (activeModalBox && deltaY > 70 && absY > absX * 1.8 && touchStartY < 160) {
+                window.closeAllModals();
+            }
+            return;
+        }
+
+        // 2. DRAWER SWIPE GESTURES:
         if (isDrawerOpen) {
             // Decisive swipe left closes the drawer
-            if (deltaX < -45 && absX > absY * 0.8) {
+            if (deltaX < -45 && absX > absY * 1.2) {
                 window.toggleMobileSidebar(true);
                 return;
             }
         } else if (window.innerWidth <= 768) {
-            // Edge Swipe Right: from the left screen boundary (< 45px) opens the drawer
-            if (touchStartX <= 45 && deltaX > 50 && absX > absY * 1.2) {
+            // Edge Swipe Right: from the left screen boundary (<= 30px) opens the drawer
+            if (touchStartX <= 30 && deltaX > 55 && absX > absY * 1.4) {
                 window.toggleMobileSidebar(false);
                 return;
             }
         }
 
-        // 2. MODAL SWIPE DOWN TO DISMISS:
-        const activeModalBox = document.querySelector('.sf-modal-overlay.active .sf-modal-box');
-        if (activeModalBox && deltaY > 60 && absY > absX * 1.5) {
-            const header = activeModalBox.querySelector('.sf-modal-header');
-            if (header && (e.target === header || header.contains(e.target) || touchStartY < 140)) {
-                if (typeof closeAllModals === 'function') {
-                    closeAllModals();
-                } else {
-                    document.querySelectorAll('.sf-modal-overlay.active').forEach(m => m.classList.remove('active'));
-                }
-                return;
-            }
-        }
-
-        // Avoid triggering page navigation if interacting with forms, buttons, canvas charts, or pills
+        // 3. STRICT PROTECTION FOR INTERACTIVE & SCROLLABLE CONTENT:
+        // Do not trigger tab navigation if interacting with forms, buttons, cards, tables, chat, or lists
         const target = e.target;
-        if (target && target.closest('input, textarea, select, button, a, canvas, .ai-quick-pills, .analytics-timeframe-bar, .sf-modal-box')) {
+        if (target && target.closest('input, textarea, select, button, a, canvas, table, .table-responsive, .transaction, .transaction-item, .card, .content-card, .quick-card, .summary-card, .ai-chat, .ai-chat-stream, .ai-quick-pills, .analytics-timeframe-bar, .sf-modal-box, .modal-card, .chart-card, .sidebar, .sf-mobile-bottom-nav, .topbar, .filter-toolbar')) {
             return;
         }
 
-        // 3. TAB / VIEW HORIZONTAL SWIPE GESTURES (Mobile & Tablet):
-        if (window.innerWidth <= 850 && absX > 75 && absX > absY * 1.6) {
+        // 4. TAB / VIEW HORIZONTAL SWIPE GESTURES (Strictly deliberate blank-area swipe):
+        if (window.innerWidth <= 850 && absX > 110 && absY < 22 && elapsedTime < 400) {
             const currentIndex = getCurrentPageIndex();
             if (currentIndex === -1) return;
 
-            if (deltaX < -75) {
+            if (deltaX < -110) {
                 // Swipe Left -> Navigate to next tab
                 if (currentIndex < TAB_PAGES.length - 1) {
                     window.location.href = TAB_PAGES[currentIndex + 1];
                 }
-            } else if (deltaX > 75 && touchStartX > 45) {
+            } else if (deltaX > 110 && touchStartX > 30) {
                 // Swipe Right -> Navigate to previous tab
                 if (currentIndex > 0) {
                     window.location.href = TAB_PAGES[currentIndex - 1];
@@ -1371,6 +1383,7 @@ function openTransactionModal(type = 'expense', existingId = null) {
             document.getElementById('modalNotes').value = tx.notes || '';
 
             modal.classList.add('active');
+            document.body.classList.add('modal-open');
             return;
         }
     }
@@ -1395,11 +1408,13 @@ function openTransactionModal(type = 'expense', existingId = null) {
     document.getElementById('modalNotes').value = '';
 
     modal.classList.add('active');
+    document.body.classList.add('modal-open');
 }
 
 function closeTransactionModal() {
     const modal = document.getElementById('transactionModal');
     if (modal) modal.classList.remove('active');
+    document.body.classList.remove('modal-open');
     currentEditingTransactionId = null;
 }
 
@@ -1668,11 +1683,13 @@ function openBudgetModal() {
     });
 
     modal.classList.add('active');
+    document.body.classList.add('modal-open');
 }
 
 function closeBudgetModal() {
     const modal = document.getElementById('budgetModal');
     if (modal) modal.classList.remove('active');
+    document.body.classList.remove('modal-open');
 }
 
 function createBudgetModal() {
@@ -2076,10 +2093,10 @@ function renderDashboard() {
                     <div class="transaction-actions-wrap">
                         <strong class="amount ${textClass}">${sign}${formatCurrency(tx.amount)}</strong>
                         <div class="action-btns">
-                            <button class="edit-icon-btn" onclick="editTransactionItem('${tx.id}')" title="Edit">
+                            <button type="button" class="edit-icon-btn" onclick="editTransactionItem('${tx.id}')" title="Edit">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
-                            <button class="delete-icon-btn" onclick="deleteTransactionItem('${tx.id}', '${escapeHTML(tx.title)}')" title="Delete">
+                            <button type="button" class="delete-icon-btn" onclick="deleteTransactionItem('${tx.id}', '${escapeHTML(tx.title)}')" title="Delete">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </div>
@@ -2234,10 +2251,10 @@ function renderExpensesPage() {
                     <div class="transaction-actions-wrap">
                         <strong class="amount expense-text">-${formatCurrency(tx.amount)}</strong>
                         <div class="action-btns">
-                            <button class="edit-icon-btn" onclick="editTransactionItem('${tx.id}')" title="Edit">
+                            <button type="button" class="edit-icon-btn" onclick="editTransactionItem('${tx.id}')" title="Edit">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
-                            <button class="delete-icon-btn" onclick="deleteTransactionItem('${tx.id}', '${escapeHTML(tx.title)}')" title="Delete">
+                            <button type="button" class="delete-icon-btn" onclick="deleteTransactionItem('${tx.id}', '${escapeHTML(tx.title)}')" title="Delete">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </div>
@@ -2411,10 +2428,10 @@ function renderIncomePage() {
                     <div class="transaction-actions-wrap">
                         <strong class="amount income-text">+${formatCurrency(tx.amount)}</strong>
                         <div class="action-btns">
-                            <button class="edit-icon-btn" onclick="editTransactionItem('${tx.id}')" title="Edit">
+                            <button type="button" class="edit-icon-btn" onclick="editTransactionItem('${tx.id}')" title="Edit">
                                 <i class="fa-solid fa-pen"></i>
                             </button>
-                            <button class="delete-icon-btn" onclick="deleteTransactionItem('${tx.id}', '${escapeHTML(tx.title)}')" title="Delete">
+                            <button type="button" class="delete-icon-btn" onclick="deleteTransactionItem('${tx.id}', '${escapeHTML(tx.title)}')" title="Delete">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </div>
@@ -2534,9 +2551,9 @@ function renderAnalyticsPage() {
             <span style="font-weight:700; font-size:0.85rem; color:var(--navy); margin-right:6px;">
                 <i class="fa-solid fa-filter"></i> Timeframe:
             </span>
-            <button class="timeframe-pill ${analyticsTimeframe === 'THIS_MONTH' ? 'active' : ''}" onclick="setAnalyticsTimeframe('THIS_MONTH')">Current Month</button>
-            <button class="timeframe-pill ${analyticsTimeframe === 'LAST_3M' ? 'active' : ''}" onclick="setAnalyticsTimeframe('LAST_3M')">Last 3 Months</button>
-            <button class="timeframe-pill ${analyticsTimeframe === 'ALL' ? 'active' : ''}" onclick="setAnalyticsTimeframe('ALL')">All Time</button>
+            <button type="button" class="timeframe-pill ${analyticsTimeframe === 'THIS_MONTH' ? 'active' : ''}" onclick="setAnalyticsTimeframe('THIS_MONTH')">Current Month</button>
+            <button type="button" class="timeframe-pill ${analyticsTimeframe === 'LAST_3M' ? 'active' : ''}" onclick="setAnalyticsTimeframe('LAST_3M')">Last 3 Months</button>
+            <button type="button" class="timeframe-pill ${analyticsTimeframe === 'ALL' ? 'active' : ''}" onclick="setAnalyticsTimeframe('ALL')">All Time</button>
         `;
     }
 
@@ -3345,11 +3362,13 @@ window.openAvatarModal = function() {
         modal = document.getElementById('avatarPickerModal');
     }
     modal.classList.add('active');
+    document.body.classList.add('modal-open');
 };
 
 window.closeAvatarModal = function() {
     const modal = document.getElementById('avatarPickerModal');
     if (modal) modal.classList.remove('active');
+    document.body.classList.remove('modal-open');
 };
 
 function createAvatarModal() {
@@ -3698,6 +3717,37 @@ window.clearAllData = async function() {
 // =========================================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Ensure clean viewport state: clear any lingering overlays or scroll locks from previous navigation
+    document.body.classList.remove('sidebar-drawer-open', 'modal-open');
+    const existingBackdrop = document.getElementById('sfSidebarBackdrop');
+    if (existingBackdrop) existingBackdrop.classList.remove('active');
+
+    // Android Capacitor Back Button integration
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+        window.Capacitor.Plugins.App.addListener('backButton', ({ canGoBack }) => {
+            const activeModal = document.querySelector('.sf-modal-overlay.active, .modal-backdrop.active');
+            if (activeModal) {
+                if (typeof window.closeAllModals === 'function') window.closeAllModals();
+                return;
+            }
+            const sidebar = document.querySelector('.sidebar.open');
+            if (sidebar) {
+                if (typeof window.toggleMobileSidebar === 'function') window.toggleMobileSidebar(true);
+                return;
+            }
+            const dropdown = document.querySelector('.topbar-user-dropdown.active');
+            if (dropdown) {
+                dropdown.classList.remove('active');
+                return;
+            }
+            if (canGoBack) {
+                window.history.back();
+            } else {
+                window.Capacitor.Plugins.App.exitApp();
+            }
+        });
+    }
+
     if (!AuthManager.requireAuth()) return;
     FinanceStore.init();
 
@@ -3951,12 +4001,14 @@ function showGoogleSetupModal() {
     if (input) input.value = existing;
 
     modal.classList.add('active');
+    document.body.classList.add('modal-open');
 }
 window.showGoogleSetupModal = showGoogleSetupModal;
 
 function closeGoogleSetupModal() {
     const modal = document.getElementById('googleSetupModal');
     if (modal) modal.classList.remove('active');
+    document.body.classList.remove('modal-open');
     resetGoogleBtn();
 }
 window.closeGoogleSetupModal = closeGoogleSetupModal;
@@ -4177,12 +4229,14 @@ function showForgotPasswordModal() {
     document.getElementById('fpStep1').style.display = 'block';
     document.getElementById('fpStep2').style.display = 'none';
     modal.classList.add('active');
+    document.body.classList.add('modal-open');
 }
 window.showForgotPasswordModal = showForgotPasswordModal;
 
 function closeForgotPasswordModal() {
     const modal = document.getElementById('forgotPasswordModal');
     if (modal) modal.classList.remove('active');
+    document.body.classList.remove('modal-open');
 }
 window.closeForgotPasswordModal = closeForgotPasswordModal;
 
@@ -4531,10 +4585,10 @@ function renderSavingsTransactionList(transactions) {
                 <div class="transaction-actions-wrap">
                     <strong class="amount ${amountClass}">${sign}${formatCurrency(tx.amount)}</strong>
                     <div class="action-btns">
-                        <button class="edit-icon-btn" onclick="editSavingsTransaction('${tx.id}')" title="Edit">
+                        <button type="button" class="edit-icon-btn" onclick="editSavingsTransaction('${tx.id}')" title="Edit">
                             <i class="fa-solid fa-pen"></i>
                         </button>
-                        <button class="delete-icon-btn" onclick="deleteSavingsTransaction('${tx.id}', '${escapeHTML(purposeOrReason)}')" title="Delete">
+                        <button type="button" class="delete-icon-btn" onclick="deleteSavingsTransaction('${tx.id}', '${escapeHTML(purposeOrReason)}')" title="Delete">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
@@ -4770,6 +4824,7 @@ function openSavingsModal(type = 'deposit', existingId = null) {
             document.getElementById('savingsModalDescription').value = tx.description || '';
 
             modal.classList.add('active');
+            document.body.classList.add('modal-open');
             return;
         }
     }
@@ -4785,12 +4840,14 @@ function openSavingsModal(type = 'deposit', existingId = null) {
     document.getElementById('savingsModalDescription').value = '';
 
     modal.classList.add('active');
+    document.body.classList.add('modal-open');
 }
 window.openSavingsModal = openSavingsModal;
 
 function closeSavingsModal() {
     const modal = document.getElementById('savingsModal');
     if (modal) modal.classList.remove('active');
+    document.body.classList.remove('modal-open');
     currentEditingSavingsId = null;
 }
 window.closeSavingsModal = closeSavingsModal;

@@ -2629,12 +2629,14 @@ tr:last-child td {
     z-index: 10000;
     opacity: 0;
     visibility: hidden;
-    transition: 0.25s ease;
+    pointer-events: none !important;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
 }
 
 .sf-modal-overlay.active {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto !important;
 }
 
 .sf-modal-box {
@@ -2645,12 +2647,41 @@ tr:last-child td {
     padding: 32px;
     box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.05);
     transform: translateY(20px) scale(0.98);
-    transition: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
     color-scheme: light;
+    pointer-events: auto !important;
 }
 
 .sf-modal-overlay.active .sf-modal-box {
     transform: translateY(0) scale(1);
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none !important;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.modal-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto !important;
+}
+
+.modal-backdrop .modal-card {
+    pointer-events: auto !important;
 }
 
 .sf-modal-header {
@@ -3517,17 +3548,20 @@ tr:last-child td {
         z-index: 9998;
         opacity: 0;
         visibility: hidden;
-        transition: 0.25s ease;
+        pointer-events: none !important;
+        transition: opacity 0.25s ease, visibility 0.25s ease;
     }
 
     .sidebar-backdrop.active {
         opacity: 1;
         visibility: visible;
+        pointer-events: auto !important;
     }
 
     .dashboard-main {
         margin-left: 0 !important;
         width: 100% !important;
+        padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
     }
 
     .filter-toolbar {
@@ -3620,13 +3654,15 @@ tr:last-child td {
     z-index: 99999;
     opacity: 0;
     visibility: hidden;
+    pointer-events: none !important;
     transform: translateY(-8px);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .topbar-user-dropdown.active {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto !important;
     transform: translateY(0);
 }
 
@@ -4180,15 +4216,26 @@ tr:last-child td {
     --safe-area-right: env(safe-area-inset-right, 0px);
 }
 
-html, body {
-    max-width: 100vw;
+html {
+    height: auto;
+    min-height: 100%;
     overflow-x: hidden;
-    -webkit-tap-highlight-color: transparent;
+    overflow-y: auto;
+    scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
-    overscroll-behavior-y: contain;
+    min-height: 100%;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    overscroll-behavior-y: auto;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* --------------------------------------------------------------------------
@@ -4202,11 +4249,12 @@ textarea {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Ensure mobile form fields do not cause auto-zooming */
+/* Ensure mobile form fields do not cause auto-zooming and remain visible above keyboard */
 input,
 select,
 textarea {
     font-size: 16px !important;
+    scroll-margin-bottom: 90px;
 }
 
 .primary-btn,
@@ -4227,16 +4275,16 @@ textarea {
 .edit-icon-btn,
 .delete-icon-btn,
 .modal-close-btn,
-.sidebar-close-btn {
+.sidebar-close-btn,
+.timeframe-pill,
+.mobile-nav-toggle,
+.bottom-nav-item,
+.ai-pill {
     min-width: 44px !important;
     min-height: 44px !important;
-    width: 44px !important;
-    height: 44px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
     box-sizing: border-box !important;
     cursor: pointer;
+    touch-action: manipulation;
 }
 
 /* --------------------------------------------------------------------------
@@ -4438,22 +4486,25 @@ textarea {
         z-index: 10000 !important;
         opacity: 0 !important;
         visibility: hidden !important;
+        pointer-events: none !important;
         transition: opacity 0.25s ease, visibility 0.25s ease !important;
     }
 
     .sidebar-backdrop.active {
         opacity: 1 !important;
         visibility: visible !important;
+        pointer-events: auto !important;
     }
 
     .dashboard-main {
         width: 100% !important;
         margin-left: 0 !important;
-        padding: max(16px, env(safe-area-inset-top)) 14px calc(76px + env(safe-area-inset-bottom)) 14px !important;
+        padding: max(16px, env(safe-area-inset-top)) 14px calc(96px + env(safe-area-inset-bottom, 0px)) 14px !important;
         box-sizing: border-box !important;
     }
 
-    body.sidebar-drawer-open {
+    body.sidebar-drawer-open,
+    body.modal-open {
         overflow: hidden !important;
     }
 }
