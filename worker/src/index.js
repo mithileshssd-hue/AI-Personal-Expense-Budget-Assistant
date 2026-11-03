@@ -247,7 +247,31 @@ async function ensureTablesExist(db) {
                 used INTEGER DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            )`)
+            )`),
+            db.prepare(`CREATE TABLE IF NOT EXISTS savings_transactions (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                type TEXT NOT NULL CHECK (type IN ('deposit', 'withdrawal')),
+                amount REAL NOT NULL CHECK (amount > 0),
+                purpose TEXT NOT NULL,
+                description TEXT,
+                date DATE NOT NULL,
+                time TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )`),
+            db.prepare(`CREATE TABLE IF NOT EXISTS savings_goals (
+                id TEXT PRIMARY KEY,
+                user_id TEXT UNIQUE NOT NULL,
+                target_amount REAL NOT NULL DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )`),
+            db.prepare(`CREATE INDEX IF NOT EXISTS idx_savings_tx_user_date ON savings_transactions(user_id, date)`),
+            db.prepare(`CREATE INDEX IF NOT EXISTS idx_savings_tx_user_type ON savings_transactions(user_id, type)`),
+            db.prepare(`CREATE INDEX IF NOT EXISTS idx_savings_goals_user ON savings_goals(user_id)`)
         ]);
 
         const alex = await db.prepare('SELECT id FROM users WHERE email = ?').bind('alex.finance@gmail.com').first();
@@ -263,6 +287,46 @@ async function ensureTablesExist(db) {
 
         try { await db.prepare('ALTER TABLE expenses ADD COLUMN time TEXT').run(); } catch (e) {}
         try { await db.prepare('ALTER TABLE income ADD COLUMN time TEXT').run(); } catch (e) {}
+
+        try {
+            await db.prepare(`CREATE TRIGGER IF NOT EXISTS trg_prevent_negative_savings_balance_insert
+                BEFORE INSERT ON savings_transactions
+                WHEN NEW.type = 'withdrawal'
+                BEGIN
+                    SELECT CASE
+                        WHEN (
+                            COALESCE((SELECT SUM(CASE WHEN type = 'deposit' THEN amount ELSE -amount END) FROM savings_transactions WHERE user_id = NEW.user_id), 0) < NEW.amount
+                        )
+                        THEN RAISE(ABORT, 'Withdrawal cannot exceed available savings balance.')
+                    END;
+                END`).run();
+        } catch (e) {}
+        try {
+            await db.prepare(`CREATE TRIGGER IF NOT EXISTS trg_prevent_negative_savings_balance_update
+                BEFORE UPDATE ON savings_transactions
+                BEGIN
+                    SELECT CASE
+                        WHEN (
+                            COALESCE((SELECT SUM(CASE WHEN type = 'deposit' THEN amount ELSE -amount END) FROM savings_transactions WHERE user_id = NEW.user_id AND id != OLD.id), 0)
+                            + (CASE WHEN NEW.type = 'deposit' THEN NEW.amount ELSE -NEW.amount END) < 0
+                        )
+                        THEN RAISE(ABORT, 'Savings update would result in a negative savings balance.')
+                    END;
+                END`).run();
+        } catch (e) {}
+        try {
+            await db.prepare(`CREATE TRIGGER IF NOT EXISTS trg_prevent_negative_savings_balance_delete
+                BEFORE DELETE ON savings_transactions
+                WHEN OLD.type = 'deposit'
+                BEGIN
+                    SELECT CASE
+                        WHEN (
+                            COALESCE((SELECT SUM(CASE WHEN type = 'deposit' THEN amount ELSE -amount END) FROM savings_transactions WHERE user_id = OLD.user_id), 0) - OLD.amount < 0
+                        )
+                        THEN RAISE(ABORT, 'Cannot delete deposit: would result in a negative savings balance.')
+                    END;
+                END`).run();
+        } catch (e) {}
 
         tablesInitialized = true;
     } catch (err) {
@@ -1001,6 +1065,227 @@ export default {
             }
 
             // ---------------------------------------------------------
+            // SAVINGS ENDPOINTS
+            // ---------------------------------------------------------
+
+            if (path === '/api/savings' && request.method === 'GET') {
+                const { results } = await env.DB.prepare(
+                    'SELECT * FROM savings_transactions WHERE user_id = ? ORDER BY date DESC, time DESC, created_at DESC'
+                ).bind(userId).all();
+
+                const metrics = await getSavingsMetrics(env.DB, userId);
+
+                const formatted = (results || []).map(r => ({
+                    id: r.id,
+                    type: r.type,
+                    amount: r.amount,
+                    purpose: r.purpose,
+                    category: r.purpose,
+                    description: r.description || '',
+                    date: r.date,
+                    time: r.time || '',
+                    created_at: r.created_at
+                }));
+
+                return jsonResponse({
+                    success: true,
+                    savings: {
+                        ...metrics,
+                        transactions: formatted
+                    }
+                });
+            }
+
+            if (path === '/api/savings/deposit' && request.method === 'POST') {
+                const body = await parseRequestBody(request);
+                const rawAmount = parseFloat(body.amount);
+                const purpose = (body.purpose || body.category || '').trim();
+                const description = (body.description || '').trim();
+                const date = body.date || new Date().toISOString().split('T')[0];
+                const time = (body.time || '').trim();
+
+                if (isNaN(rawAmount) || rawAmount <= 0) {
+                    return errorResponse('Deposit amount must be a positive number greater than zero.', 400);
+                }
+                if (!purpose) {
+                    return errorResponse('Savings purpose is required.', 400);
+                }
+
+                const txId = (body.id && String(body.id).trim()) || ('sav_dep_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7));
+
+                const existing = await env.DB.prepare('SELECT id FROM savings_transactions WHERE id = ?').bind(txId).first();
+                if (existing) {
+                    return errorResponse('A savings transaction with this ID already exists (duplicate submission prevented).', 409);
+                }
+
+                await env.DB.prepare(
+                    'INSERT INTO savings_transactions (id, user_id, type, amount, purpose, description, date, time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+                ).bind(txId, userId, 'deposit', rawAmount, purpose, description, date, time).run();
+
+                const metrics = await getSavingsMetrics(env.DB, userId);
+
+                return jsonResponse({
+                    success: true,
+                    transaction: {
+                        id: txId,
+                        type: 'deposit',
+                        amount: rawAmount,
+                        purpose,
+                        category: purpose,
+                        description,
+                        date,
+                        time
+                    },
+                    summary: metrics
+                });
+            }
+
+            if (path === '/api/savings/withdraw' && request.method === 'POST') {
+                const body = await parseRequestBody(request);
+                const rawAmount = parseFloat(body.amount);
+                const reason = (body.reason || body.purpose || body.category || '').trim();
+                const description = (body.description || '').trim();
+                const date = body.date || new Date().toISOString().split('T')[0];
+                const time = (body.time || '').trim();
+
+                if (isNaN(rawAmount) || rawAmount <= 0) {
+                    return errorResponse('Withdrawal amount must be a positive number greater than zero.', 400);
+                }
+                if (!reason) {
+                    return errorResponse('Withdrawal reason is required.', 400);
+                }
+
+                const txId = (body.id && String(body.id).trim()) || ('sav_wth_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7));
+
+                const existing = await env.DB.prepare('SELECT id FROM savings_transactions WHERE id = ?').bind(txId).first();
+                if (existing) {
+                    return errorResponse('A savings transaction with this ID already exists (duplicate submission prevented).', 409);
+                }
+
+                // Server-side balance validation
+                const currentMetrics = await getSavingsMetrics(env.DB, userId);
+                if (rawAmount > currentMetrics.balance) {
+                    return errorResponse(`Withdrawal amount (₹${rawAmount.toLocaleString()}) cannot exceed available savings balance (₹${currentMetrics.balance.toLocaleString()}).`, 400);
+                }
+
+                try {
+                    await env.DB.prepare(
+                        'INSERT INTO savings_transactions (id, user_id, type, amount, purpose, description, date, time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+                    ).bind(txId, userId, 'withdrawal', rawAmount, reason, description, date, time).run();
+                } catch (dbErr) {
+                    return errorResponse(dbErr.message || 'Withdrawal rejected: insufficient savings balance.', 400);
+                }
+
+                const metrics = await getSavingsMetrics(env.DB, userId);
+
+                return jsonResponse({
+                    success: true,
+                    transaction: {
+                        id: txId,
+                        type: 'withdrawal',
+                        amount: rawAmount,
+                        purpose: reason,
+                        category: reason,
+                        description,
+                        date,
+                        time
+                    },
+                    summary: metrics
+                });
+            }
+
+            if (path === '/api/savings/goal' && request.method === 'POST') {
+                const body = await parseRequestBody(request);
+                const targetAmount = parseFloat(body.targetAmount);
+
+                if (isNaN(targetAmount) || targetAmount < 0) {
+                    return errorResponse('Savings goal target must be a non-negative number.', 400);
+                }
+
+                const goalId = 'goal_' + userId;
+                await env.DB.prepare(
+                    'INSERT INTO savings_goals (id, user_id, target_amount) VALUES (?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET target_amount = excluded.target_amount, updated_at = CURRENT_TIMESTAMP'
+                ).bind(goalId, userId, targetAmount).run();
+
+                const metrics = await getSavingsMetrics(env.DB, userId);
+
+                return jsonResponse({
+                    success: true,
+                    summary: metrics
+                });
+            }
+
+            if (path.startsWith('/api/savings/') && request.method === 'PUT') {
+                const txId = path.split('/')[3];
+                const body = await parseRequestBody(request);
+                const rawAmount = parseFloat(body.amount);
+                const purposeOrReason = (body.purpose || body.reason || body.category || '').trim();
+                const description = body.description !== undefined ? String(body.description).trim() : '';
+                const date = body.date || new Date().toISOString().split('T')[0];
+                const time = (body.time || '').trim();
+
+                if (isNaN(rawAmount) || rawAmount <= 0) {
+                    return errorResponse('Transaction amount must be a positive number greater than zero.', 400);
+                }
+
+                const existing = await env.DB.prepare('SELECT * FROM savings_transactions WHERE id = ? AND user_id = ?').bind(txId, userId).first();
+                if (!existing) {
+                    return errorResponse('Savings transaction not found or unauthorized.', 404);
+                }
+
+                const purpose = purposeOrReason || existing.purpose;
+
+                // Check balance safety before update
+                const currentMetrics = await getSavingsMetrics(env.DB, userId);
+                let resultingBalance = currentMetrics.balance;
+                if (existing.type === 'deposit') {
+                    resultingBalance = resultingBalance - existing.amount + rawAmount;
+                } else {
+                    resultingBalance = resultingBalance + existing.amount - rawAmount;
+                }
+
+                if (resultingBalance < 0) {
+                    return errorResponse('Cannot update transaction: resulting savings balance would be negative.', 400);
+                }
+
+                try {
+                    await env.DB.prepare(
+                        'UPDATE savings_transactions SET amount = ?, purpose = ?, description = ?, date = ?, time = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?'
+                    ).bind(rawAmount, purpose, description, date, time, txId, userId).run();
+                } catch (dbErr) {
+                    return errorResponse(dbErr.message || 'Update rejected: would cause negative savings balance.', 400);
+                }
+
+                const metrics = await getSavingsMetrics(env.DB, userId);
+                return jsonResponse({ success: true, summary: metrics });
+            }
+
+            if (path.startsWith('/api/savings/') && request.method === 'DELETE') {
+                const txId = path.split('/')[3];
+                const existing = await env.DB.prepare('SELECT * FROM savings_transactions WHERE id = ? AND user_id = ?').bind(txId, userId).first();
+                if (!existing) {
+                    return errorResponse('Savings transaction not found or unauthorized.', 404);
+                }
+
+                if (existing.type === 'deposit') {
+                    const currentMetrics = await getSavingsMetrics(env.DB, userId);
+                    if (currentMetrics.balance - existing.amount < 0) {
+                        return errorResponse(`Cannot delete deposit: available savings balance is ₹${currentMetrics.balance.toLocaleString()}, which is insufficient to absorb deleting ₹${existing.amount.toLocaleString()}.`, 400);
+                    }
+                }
+
+                try {
+                    const res = await env.DB.prepare('DELETE FROM savings_transactions WHERE id = ? AND user_id = ?').bind(txId, userId).run();
+                    if (res.meta.changes === 0) return errorResponse('Transaction not found or unauthorized.', 404);
+                } catch (dbErr) {
+                    return errorResponse(dbErr.message || 'Cannot delete deposit: would result in negative balance.', 400);
+                }
+
+                const metrics = await getSavingsMetrics(env.DB, userId);
+                return jsonResponse({ success: true, summary: metrics });
+            }
+
+            // ---------------------------------------------------------
             // DASHBOARD & ANALYTICS
             // ---------------------------------------------------------
 
@@ -1051,6 +1336,8 @@ export default {
             if (path === '/api/data/reset' && request.method === 'POST') {
                 await env.DB.prepare('DELETE FROM expenses WHERE user_id = ?').bind(userId).run();
                 await env.DB.prepare('DELETE FROM income WHERE user_id = ?').bind(userId).run();
+                await env.DB.prepare('DELETE FROM savings_transactions WHERE user_id = ?').bind(userId).run();
+                await env.DB.prepare('DELETE FROM savings_goals WHERE user_id = ?').bind(userId).run();
                 await seedUserStarterData(env.DB, userId);
                 return jsonResponse({ success: true, message: 'Sample data restored successfully.' });
             }
@@ -1059,6 +1346,8 @@ export default {
                 await env.DB.prepare('DELETE FROM expenses WHERE user_id = ?').bind(userId).run();
                 await env.DB.prepare('DELETE FROM income WHERE user_id = ?').bind(userId).run();
                 await env.DB.prepare('DELETE FROM budgets WHERE user_id = ?').bind(userId).run();
+                await env.DB.prepare('DELETE FROM savings_transactions WHERE user_id = ?').bind(userId).run();
+                await env.DB.prepare('DELETE FROM savings_goals WHERE user_id = ?').bind(userId).run();
                 return jsonResponse({ success: true, message: 'All financial records cleared successfully.' });
             }
 
@@ -1181,5 +1470,34 @@ async function checkInternalBudgetAlerts(db, userId, dateStr) {
         return alerts;
     } catch (e) {
         return [];
+    }
+}
+
+// ==========================================
+// SAVINGS METRICS HELPER
+// ==========================================
+
+async function getSavingsMetrics(db, userId) {
+    try {
+        const depRes = await db.prepare(
+            "SELECT COALESCE(SUM(amount), 0) as total FROM savings_transactions WHERE user_id = ? AND type = 'deposit'"
+        ).bind(userId).first();
+        const withRes = await db.prepare(
+            "SELECT COALESCE(SUM(amount), 0) as total FROM savings_transactions WHERE user_id = ? AND type = 'withdrawal'"
+        ).bind(userId).first();
+        const goalRes = await db.prepare(
+            "SELECT target_amount FROM savings_goals WHERE user_id = ?"
+        ).bind(userId).first();
+
+        const totalDeposits = depRes ? Number(depRes.total) || 0 : 0;
+        const totalWithdrawals = withRes ? Number(withRes.total) || 0 : 0;
+        const balance = Math.max(0, totalDeposits - totalWithdrawals);
+        const goal = goalRes ? Number(goalRes.target_amount) || 0 : 0;
+        const progress = goal > 0 ? Math.min(100, Math.round((balance / goal) * 100)) : 0;
+
+        return { balance, goal, totalDeposits, totalWithdrawals, progress };
+    } catch (e) {
+        console.error('Error computing savings metrics:', e);
+        return { balance: 0, goal: 0, totalDeposits: 0, totalWithdrawals: 0, progress: 0 };
     }
 }

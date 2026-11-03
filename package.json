@@ -3,6 +3,10 @@
   "version": "2.0.0",
   "description": "SmartFinance AI Personal Expense & Budget Assistant Multi-User Web & Mobile Application",
   "scripts": {
+    "start": "python -m http.server 5500 --bind 127.0.0.1",
+    "serve": "python -m http.server 5500 --bind 127.0.0.1",
+    "dev": "python -m http.server 5500 --bind 127.0.0.1",
+    "start:all": "start_server.bat",
     "worker:dev": "node node_modules/wrangler/bin/wrangler.js dev --port 8787",
     "worker:deploy": "wrangler deploy",
     "db:migrate:local": "wrangler d1 execute DB --local --file=./migrations/0001_initial.sql",

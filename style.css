@@ -2445,18 +2445,12 @@ tr:last-child td {
 
     /* Dashboard */
 
-    .sidebar {
-        width: 60px;
-
-        padding: 20px 7px;
-    }
-
     .dashboard-main {
-        width: calc(100% - 60px);
+        width: 100% !important;
 
-        margin-left: 60px;
+        margin-left: 0 !important;
 
-        padding: 22px 14px;
+        padding: 20px 14px;
     }
 
     .topbar h1 {
@@ -3758,7 +3752,7 @@ tr:last-child td {
 
 .profile-stats-strip {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
     gap: 14px;
     margin-top: 20px;
     margin-bottom: 24px;
@@ -3784,6 +3778,7 @@ tr:last-child td {
     align-items: center;
     justify-content: center;
     font-size: 1.1rem;
+    flex-shrink: 0;
 }
 
 .profile-stat-info label {
@@ -3797,6 +3792,8 @@ tr:last-child td {
     font-size: 1rem;
     font-weight: 800;
     color: var(--navy);
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .saved-account-card {
@@ -3828,6 +3825,7 @@ tr:last-child td {
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid #cbd5e1;
+    flex-shrink: 0;
 }
 
 .account-name {
@@ -3837,11 +3835,15 @@ tr:last-child td {
     display: flex;
     align-items: center;
     gap: 8px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .account-email {
     font-size: 0.8rem;
     color: var(--text-light);
+    overflow-wrap: anywhere;
+    word-break: break-all;
 }
 
 .active-badge {
@@ -3861,7 +3863,7 @@ tr:last-child td {
 
 .avatar-presets-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 100px), 1fr));
     gap: 14px;
     margin-top: 12px;
 }
@@ -3900,5 +3902,997 @@ tr:last-child td {
 .avatar-modal-card {
     max-width: 520px;
 }
+
+/* Profile Responsive Media Query Overrides */
+@media (max-width: 640px) {
+    .profile-stats-strip {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 16px;
+        margin-bottom: 20px;
+    }
+    .profile-stat-box {
+        padding: 12px 10px;
+        gap: 10px;
+    }
+    .profile-stat-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.95rem;
+    }
+    .profile-stat-info label {
+        font-size: 0.72rem;
+    }
+    .profile-stat-info span {
+        font-size: 0.88rem;
+    }
+    .saved-account-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px;
+    }
+    .saved-account-card > button,
+    .saved-account-card > div:last-child {
+        width: 100%;
+    }
+    .saved-account-card button {
+        width: 100%;
+        justify-content: center;
+    }
+    .account-left {
+        width: 100%;
+        gap: 10px;
+    }
+    .avatar-modal-card {
+        width: 94vw !important;
+        max-width: 100% !important;
+        padding: 18px 14px !important;
+        box-sizing: border-box;
+    }
+    .avatar-presets-grid {
+        grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+        gap: 8px;
+    }
+    .avatar-option-card {
+        padding: 8px 6px;
+    }
+    .avatar-option-card img {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+@media (max-width: 380px) {
+    .profile-stats-strip {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================================
+   SAVINGS TARGET & PROGRESS BAR STYLES
+   ========================================================= */
+
+.savings-card {
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+}
+
+.progress-wrapper {
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-bar-bg {
+  flex: 1;
+  height: 12px;
+  background-color: #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #2563eb;
+  transition: width 0.35s ease;
+}
+
+.progress-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  min-width: 80px;
+}
+
+.notice-text {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+/* =========================================================
+   SCOPED SIDEBAR SAVINGS TARGET WIDGET STYLES (STANDALONE CARD)
+   ========================================================= */
+
+.sidebar-savings-card {
+  display: block !important;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 12px 0 16px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+.sidebar-savings-card:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.sidebar-savings-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.sidebar-savings-header i {
+  color: #70d8d8;
+  font-size: 0.92rem;
+}
+
+.sidebar-target-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.74rem;
+  color: #cbd5e1;
+  margin-bottom: 6px;
+  gap: 4px;
+}
+
+.sidebar-target-info span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-target-info strong {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.sidebar-progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 6px 0;
+}
+
+.sidebar-progress-bar-bg {
+  flex: 1;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sidebar-progress-bar-fill {
+  height: 100%;
+  background: #70d8d8;
+  border-radius: 4px;
+  transition: width 0.35s ease;
+}
+
+.sidebar-progress-text {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #70d8d8;
+  min-width: 32px;
+  text-align: right;
+}
+
+.sidebar-notice-text {
+  color: #f87171;
+  font-size: 0.72rem;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.sidebar-target-form {
+  margin-top: 8px;
+}
+
+.sidebar-input-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.sidebar-input-group input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  outline: none;
+  background: rgba(0, 0, 0, 0.25);
+  color: #ffffff;
+}
+
+.sidebar-input-group input::placeholder {
+  color: #94a3b8;
+}
+
+.sidebar-input-group input:focus {
+  border-color: #70d8d8;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 2px rgba(112, 216, 216, 0.2);
+}
+
+.sidebar-target-btn {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  background: #244f96;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.sidebar-target-btn:hover {
+  background: #70d8d8;
+  color: #0f172a;
+  border-color: #70d8d8;
+}
+
+@media (max-width: 850px) {
+  .sidebar-savings-card {
+    display: none; /* Hide compact widget on collapsed mobile bar icon view */
+  }
+}
+
+/* ==========================================================================
+   COMPLETE RESPONSIVE DESIGN SYSTEM & ANDROID CAPACITOR OPTIMIZATION
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Root Safe Area Variables & Viewport Resets
+   -------------------------------------------------------------------------- */
+:root {
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+}
+
+html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    overscroll-behavior-y: contain;
+}
+
+/* --------------------------------------------------------------------------
+   2. Android & Mobile Touch Target Accessibility (min 44x44px)
+   -------------------------------------------------------------------------- */
+button,
+a,
+input,
+select,
+textarea {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure mobile form fields do not cause auto-zooming */
+input,
+select,
+textarea {
+    font-size: 16px !important;
+}
+
+.primary-btn,
+.secondary-btn,
+.navy-btn,
+.danger-btn,
+.cancel-btn,
+.google-btn {
+    min-height: 44px;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.edit-icon-btn,
+.delete-icon-btn,
+.modal-close-btn,
+.sidebar-close-btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    width: 44px !important;
+    height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   3. Topbar & Header System (Fluid & Responsive)
+   -------------------------------------------------------------------------- */
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 24px;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+}
+
+.topbar-title-wrap {
+    min-width: 0;
+}
+
+.topbar-title-wrap h1 {
+    font-size: clamp(1.25rem, 4vw, 1.8rem);
+    font-weight: 800;
+    color: var(--navy);
+    margin: 0;
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+.topbar-title-wrap p {
+    font-size: clamp(0.72rem, 2vw, 0.82rem);
+    margin: 3px 0 0 0;
+    color: var(--text-light);
+    line-height: 1.3;
+}
+
+.mobile-nav-toggle {
+    display: none !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    color: var(--navy);
+    font-size: 1.15rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.mobile-nav-toggle:active {
+    transform: scale(0.95);
+    background: #f1f5f9;
+}
+
+.topbar-user-pill {
+    flex-shrink: 0;
+    min-height: 44px;
+    box-sizing: border-box;
+}
+
+/* User dropdown responsive positioning */
+@media (max-width: 768px) {
+    .topbar-user-dropdown {
+        top: calc(100% + 8px) !important;
+        right: 0 !important;
+        left: auto !important;
+        width: min(300px, calc(100vw - 28px)) !important;
+        max-width: calc(100vw - 28px) !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   4. Unified Navigation Drawer & Backdrop (< 768px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+    .mobile-nav-toggle {
+        display: inline-flex !important;
+    }
+
+    .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 280px !important;
+        max-width: 82vw !important;
+        height: 100% !important;
+        height: 100dvh !important;
+        background: #173d82 !important;
+        z-index: 10001 !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        box-shadow: 6px 0 25px rgba(0, 0, 0, 0.25) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)) 16px !important;
+    }
+
+    .sidebar.open {
+        transform: translateX(0) !important;
+    }
+
+    .sidebar-logo {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 4px 6px 14px 6px !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+        margin-bottom: 18px !important;
+    }
+
+    .sidebar-logo span {
+        display: inline !important;
+        font-size: 1.15rem !important;
+        font-weight: 700 !important;
+        color: #ffffff !important;
+    }
+
+    .sidebar-close-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        border: none !important;
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: #ffffff !important;
+        border-radius: 10px !important;
+        font-size: 1.25rem !important;
+        cursor: pointer !important;
+        transition: background 0.15s ease;
+    }
+
+    .sidebar-close-btn:active {
+        background: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    .sidebar-nav {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+
+    .sidebar-nav a,
+    .sidebar-bottom a {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 14px !important;
+        min-height: 46px !important;
+        font-size: 0.94rem !important;
+        padding: 12px 14px !important;
+        color: #e2e8f0 !important;
+        border-radius: 8px !important;
+        box-sizing: border-box !important;
+    }
+
+    .sidebar-nav a span,
+    .sidebar-bottom a span {
+        display: inline !important;
+    }
+
+    .sidebar-nav a i,
+    .sidebar-bottom a i {
+        font-size: 1.1rem !important;
+        width: 22px !important;
+        text-align: center !important;
+        margin: 0 !important;
+    }
+
+    .sidebar-backdrop {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(15, 23, 42, 0.55) !important;
+        backdrop-filter: blur(3px) !important;
+        z-index: 10000 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transition: opacity 0.25s ease, visibility 0.25s ease !important;
+    }
+
+    .sidebar-backdrop.active {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .dashboard-main {
+        width: 100% !important;
+        margin-left: 0 !important;
+        padding: max(16px, env(safe-area-inset-top)) 14px calc(76px + env(safe-area-inset-bottom)) 14px !important;
+        box-sizing: border-box !important;
+    }
+
+    body.sidebar-drawer-open {
+        overflow: hidden !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   5. Mobile Bottom Navigation Bar (Capacitor & Mobile Experience)
+   -------------------------------------------------------------------------- */
+.sf-mobile-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .sf-mobile-bottom-nav {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: calc(58px + env(safe-area-inset-bottom)) !important;
+        padding-bottom: env(safe-area-inset-bottom) !important;
+        background: #ffffff !important;
+        border-top: 1px solid #e2e8f0 !important;
+        z-index: 9990 !important;
+        box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.06) !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+        box-sizing: border-box !important;
+    }
+
+    .bottom-nav-item {
+        flex: 1;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 3px !important;
+        height: 100% !important;
+        text-decoration: none !important;
+        color: #64748b !important;
+        font-size: 0.68rem !important;
+        font-weight: 500 !important;
+        transition: color 0.15s ease, transform 0.15s ease !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        box-sizing: border-box !important;
+        -webkit-tap-highlight-color: transparent !important;
+    }
+
+    .bottom-nav-item i {
+        font-size: 1.15rem !important;
+        transition: transform 0.15s ease !important;
+    }
+
+    .bottom-nav-item.active {
+        color: var(--navy) !important;
+        font-weight: 700 !important;
+    }
+
+    .bottom-nav-item.active i {
+        color: var(--navy) !important;
+        transform: scale(1.1) !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   6. Summary Grid, Cards & Quick Actions Across Breakpoints
+   -------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+    .summary-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 16px !important;
+    }
+    .summary-card {
+        padding: 18px 16px !important;
+    }
+    .quick-actions {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+        gap: 14px !important;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 14px !important;
+    }
+    .quick-actions {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .summary-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+    .quick-actions {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+    .summary-card {
+        padding: 16px !important;
+    }
+    .summary-card h2 {
+        font-size: clamp(1.25rem, 5vw, 1.55rem) !important;
+        word-break: break-word !important;
+    }
+}
+
+@media (max-width: 350px) {
+    .quick-actions {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   7. Transactions, Filter Toolbars & Actions
+   -------------------------------------------------------------------------- */
+.transaction-actions-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .filter-toolbar {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .filter-search-box {
+        width: 100% !important;
+    }
+
+    .filter-search-box input {
+        width: 100% !important;
+        min-height: 46px !important;
+        box-sizing: border-box !important;
+    }
+
+    .filter-controls-wrap {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .filter-group {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+        min-width: 0 !important;
+    }
+
+    .filter-select {
+        width: 100% !important;
+        min-height: 44px !important;
+        box-sizing: border-box !important;
+    }
+}
+
+@media (max-width: 374px) {
+    .filter-controls-wrap {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 520px) {
+    .transaction {
+        display: flex !important;
+        align-items: flex-start !important;
+        padding: 12px 10px !important;
+        gap: 10px !important;
+        background: #ffffff;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        border: 1px solid var(--border);
+        box-sizing: border-box !important;
+    }
+
+    .transaction-info {
+        min-width: 0 !important;
+        flex: 1 !important;
+    }
+
+    .transaction-info strong {
+        font-size: 0.86rem !important;
+        word-break: break-word !important;
+    }
+
+    .transaction-info span {
+        font-size: 0.72rem !important;
+        word-break: break-word !important;
+        line-height: 1.4 !important;
+        display: block !important;
+    }
+
+    .transaction-actions-wrap {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        gap: 6px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .amount {
+        font-size: 0.88rem !important;
+        font-weight: 700 !important;
+        white-space: nowrap !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   8. Savings Page Actions & Progress System
+   -------------------------------------------------------------------------- */
+.page-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+    .page-actions {
+        justify-content: stretch !important;
+        width: 100% !important;
+        gap: 10px !important;
+        margin-bottom: 18px !important;
+    }
+
+    .page-actions button {
+        flex: 1 !important;
+        min-height: 46px !important;
+        justify-content: center !important;
+        font-size: 0.88rem !important;
+    }
+
+    .page-actions-card {
+        grid-column: span 1 !important;
+        justify-content: stretch !important;
+        width: 100% !important;
+    }
+
+    .page-actions-card button {
+        width: 100% !important;
+        min-height: 46px !important;
+        justify-content: center !important;
+    }
+}
+
+@media (max-width: 350px) {
+    .page-actions {
+        flex-direction: column !important;
+    }
+    .page-actions button {
+        width: 100% !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   9. Modals (Responsive Sizing & Form Rows)
+   -------------------------------------------------------------------------- */
+@media (max-width: 520px) {
+    .sf-modal-overlay {
+        padding: max(16px, env(safe-area-inset-top)) 12px max(16px, env(safe-area-inset-bottom)) 12px !important;
+        box-sizing: border-box !important;
+    }
+
+    .sf-modal-box {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 20px 16px !important;
+        border-radius: 16px !important;
+        max-height: calc(100dvh - 32px) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        box-sizing: border-box !important;
+    }
+
+    .form-row {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .sf-modal-actions {
+        display: flex !important;
+        flex-direction: column-reverse !important;
+        width: 100% !important;
+        gap: 10px !important;
+        margin-top: 18px !important;
+    }
+
+    .sf-modal-actions button,
+    .sf-modal-actions .navy-btn,
+    .sf-modal-actions .cancel-btn {
+        width: 100% !important;
+        min-height: 46px !important;
+        justify-content: center !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   10. User Pill Responsiveness on Small Viewports
+   -------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+    .nav-user-meta {
+        max-width: 85px !important;
+    }
+}
+
+@media (max-width: 374px) {
+    .nav-user-meta {
+        display: none !important;
+    }
+    .topbar-user-pill {
+        padding: 4px 8px 4px 4px !important;
+        gap: 4px !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   11. AI Assistant Mobile Viewport & Chat Responsiveness
+   -------------------------------------------------------------------------- */
+@media (max-width: 600px) {
+    .ai-header {
+        padding: 16px !important;
+        gap: 12px !important;
+    }
+
+    .ai-icon {
+        width: 42px !important;
+        height: 42px !important;
+        min-width: 42px !important;
+    }
+
+    .ai-chat {
+        padding: 16px !important;
+    }
+
+    .chat-input {
+        display: flex !important;
+        gap: 8px !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+
+    .chat-input input {
+        flex: 1 !important;
+        min-height: 46px !important;
+        box-sizing: border-box !important;
+    }
+
+    .chat-input button {
+        min-width: 46px !important;
+        min-height: 46px !important;
+        width: 46px !important;
+        height: 46px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .ai-quick-pills {
+        display: flex !important;
+        gap: 6px !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        padding: 8px 0 !important;
+        margin-top: 8px !important;
+    }
+
+    .ai-pill {
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        min-height: 38px !important;
+        padding: 6px 12px !important;
+        font-size: 0.78rem !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   12. Profile & Settings Responsiveness
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+    .profile-layout-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+
+    .profile-header-card {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        padding: 20px 16px !important;
+    }
+
+    .profile-email,
+    .dropdown-email {
+        word-break: break-all !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   13. Authentication Pages (Login & Register)
+   -------------------------------------------------------------------------- */
+@media (max-width: 480px) {
+    .auth-container {
+        padding: max(20px, env(safe-area-inset-top)) 14px max(20px, env(safe-area-inset-bottom)) 14px !important;
+        box-sizing: border-box !important;
+    }
+
+    .auth-card {
+        padding: 24px 18px !important;
+        border-radius: 14px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .auth-card .input-box {
+        min-height: 48px !important;
+    }
+
+    .auth-card button[type="submit"],
+    .auth-card .google-btn {
+        min-height: 48px !important;
+        font-size: 0.96rem !important;
+    }
+}
+
+
+
+
 
 

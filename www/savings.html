@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title>Savings Goal - SmartFinance</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="dashboard-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div>
+                <div class="sidebar-logo">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>SmartFinance</span>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <a href="dashboard.html">
+                        <i class="fa-solid fa-house"></i>
+                        Dashboard
+                    </a>
+                    <a href="income.html">
+                        <i class="fa-solid fa-arrow-down"></i>
+                        Income
+                    </a>
+                    <a href="expenses.html">
+                        <i class="fa-solid fa-arrow-up"></i>
+                        Expenses
+                    </a>
+                    <a href="savings.html" class="active">
+                        <i class="fa-solid fa-bullseye"></i>
+                        Savings Goal
+                    </a>
+                    <a href="analytics.html">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        Analytics
+                    </a>
+                    <a href="ai-assistant.html">
+                        <i class="fa-solid fa-robot"></i>
+                        AI Assistant
+                    </a>
+                </nav>
+            </div>
+
+            <div class="sidebar-bottom">
+                <a href="javascript:void(0)" onclick="AuthManager.logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Sign Out
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="dashboard-main">
+
+            <!-- TOPBAR -->
+            <div class="topbar">
+                <div>
+                    <h1>Savings Goal</h1>
+                    <p>Set targets, track savings progress, and monitor your net growth.</p>
+                </div>
+                <a href="javascript:void(0)" class="topbar-user-pill" id="topbarUserPill" onclick="toggleUserDropdown(event)">
+                    <img id="navUserAvatarImg" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2236%22%20height%3D%2236%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20rx%3D%2250%22%20fill%3D%22%23173d82%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2254%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22700%22%20font-size%3D%2238%22%3EU%3C%2Ftext%3E%3C%2Fsvg%3E" alt="User" class="nav-user-avatar">
+                    <div class="nav-user-meta">
+                        <span id="navUserNameSpan" class="nav-user-name">Account</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down nav-user-arrow"></i>
+                </a>
+                <script>(function(){try{var u=JSON.parse(localStorage.getItem('sf_current_user'));if(u){var n=u.name||u.email||'Account';var s=document.getElementById('navUserNameSpan');if(s)s.textContent=n;var a=document.getElementById('navUserAvatarImg');if(a&&u.picture)a.src=u.picture;}}catch(e){}})();</script>
+            </div>
+
+            <!-- PAGE ACTIONS -->
+            <div class="page-actions">
+                <button class="navy-btn small-btn" id="btnAddSavings" onclick="openSavingsModal('deposit')">
+                    <i class="fa-solid fa-plus"></i> Add Savings
+                </button>
+                <button class="navy-btn small-btn danger-btn" id="btnWithdrawSavings" onclick="openSavingsModal('withdrawal')">
+                    <i class="fa-solid fa-minus"></i> Withdraw Savings
+                </button>
+            </div>
+
+            <!-- SUMMARY CARDS GRID -->
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-icon income-icon">
+                        <i class="fa-solid fa-piggy-bank"></i>
+                    </div>
+                    <div>
+                        <span>Available Savings</span>
+                        <h2 id="cardSavingsVal">₹0</h2>
+                        <small>Available Balance</small>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-icon">
+                        <i class="fa-solid fa-bullseye"></i>
+                    </div>
+                    <div>
+                        <span>Savings Goal</span>
+                        <h2 id="cardTargetVal">₹0</h2>
+                        <small>Goal Baseline</small>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-icon income-icon">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </div>
+                    <div>
+                        <span>Total Deposits</span>
+                        <h2 id="cardDepositsVal">₹0</h2>
+                        <small>Cumulative Deposits</small>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-icon expense-icon">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </div>
+                    <div>
+                        <span>Total Withdrawals</span>
+                        <h2 id="cardWithdrawalsVal">₹0</h2>
+                        <small>Cumulative Withdrawals</small>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-icon" style="background:#e0f2fe; color:#0284c7;">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <span>Goal Progress</span>
+                        <h2 id="cardProgressVal">0%</h2>
+                        <small>Completion Rate</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN SAVINGS GOAL CARD -->
+            <div class="content-card">
+                <div class="card-heading">
+                    <div>
+                        <h2>Savings Goal &amp; Target Management</h2>
+                        <p>Set a target amount to dynamically calculate your progress bar and track achievements.</p>
+                    </div>
+                </div>
+
+                <div class="savings-summary">
+                    <div class="target-info" style="display:flex; justify:space-between; align-items:center; font-weight:600; color:var(--navy); margin-bottom:12px; gap:20px; flex-wrap:wrap;">
+                        <p>Target Amount: <strong id="displayTargetAmount">₹0</strong></p>
+                        <p>Current Savings: <strong id="displayCurrentSavings">₹0</strong></p>
+                    </div>
+
+                    <!-- Dynamic Progress Container -->
+                    <div class="progress-wrapper" id="savingsProgressWrapper">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="profileSavingsProgressBar" style="width: 0%;"></div>
+                        </div>
+                        <span id="profileSavingsPercent" class="progress-text">0%</span>
+                    </div>
+
+                    <!-- Empty / Zero Target Alert Banner -->
+                    <p id="targetZeroNotice" class="notice-text" style="display: none;">
+                        <em>No active target set. Set a goal greater than zero to track your progress.</em>
+                    </p>
+                </div>
+
+                <!-- Update Goal Form -->
+                <form id="updateTargetForm" class="target-form" style="margin-top:20px;">
+                    <label for="targetInput" style="font-weight:600; color:var(--text); font-size:0.9rem; display:block; margin-bottom:8px;">Set New Savings Target (₹)</label>
+                    <div class="input-group" style="display: flex; gap: 12px; max-width: 500px;">
+                        <input 
+                            type="number" 
+                            id="targetInput" 
+                            name="targetInput" 
+                            placeholder="e.g. 50000" 
+                            min="0" 
+                            step="any" 
+                            required 
+                        />
+                        <button type="submit" class="navy-btn small-btn" style="white-space: nowrap;">Update Target</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- FILTER & SEARCH TOOLBAR -->
+            <div id="savingsFilterToolbar" class="filter-toolbar"></div>
+
+            <!-- SAVINGS TRANSACTION HISTORY CARD -->
+            <div class="content-card">
+                <div class="card-heading">
+                    <div>
+                        <h2>Savings Transaction History</h2>
+                        <p>All recorded savings deposits and withdrawals</p>
+                    </div>
+                </div>
+
+                <div class="transaction-list" id="savingsTransactionList">
+                    <!-- Rendered dynamically by script.js -->
+                </div>
+            </div>
+
+            <!-- SAVINGS INSIGHTS CARD -->
+            <div class="content-card">
+                <div class="card-heading">
+                    <div>
+                        <h2>Savings Strategy &amp; Insights</h2>
+                        <p>SmartFinance recommendations to accelerate reaching your financial target.</p>
+                    </div>
+                </div>
+
+                <div class="insight-list">
+                    <div class="insight">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <div>
+                            <strong>Emergency Reserve</strong>
+                            <p>Aim to build 3–6 months of living expenses in your current savings pool.</p>
+                        </div>
+                    </div>
+                    <div class="insight">
+                        <i class="fa-solid fa-circle-dollar-to-slot"></i>
+                        <div>
+                            <strong>50-30-20 Rule</strong>
+                            <p>Allocate 50% to needs, 30% to wants, and 20% directly into your savings target.</p>
+                        </div>
+                    </div>
+                    <div class="insight">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <div>
+                            <strong>Automated Tracking</strong>
+                            <p>Log incoming salary and daily expenses to keep your target progress accurate.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

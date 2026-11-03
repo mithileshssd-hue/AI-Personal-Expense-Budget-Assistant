@@ -102,6 +102,30 @@ const INCOME_SOURCES = [
 
 const PAYMENT_METHODS = ['UPI', 'Credit Card', 'Debit Card', 'Cash', 'Net Banking'];
 
+const SAVINGS_PURPOSES = [
+    'Emergency Fund',
+    'Education',
+    'Travel',
+    'Shopping',
+    'Investment',
+    'General Savings',
+    'Other'
+];
+
+const WITHDRAWAL_REASONS = [
+    'Emergency',
+    'Medical Expenses',
+    'Education',
+    'Travel',
+    'Shopping',
+    'Bills',
+    'Investment',
+    'Other'
+];
+
+window.SAVINGS_PURPOSES = SAVINGS_PURPOSES;
+window.WITHDRAWAL_REASONS = WITHDRAWAL_REASONS;
+
 const CATEGORY_ICONS = {
     // Expenses
     'Food': { icon: 'fa-utensils', color: '#f59e0b', bg: '#fef3c7' },
@@ -332,6 +356,7 @@ const AuthManager = {
             'dashboard',
             'expenses',
             'income',
+            'savings',
             'analytics',
             'ai-assistant',
             'profile'
@@ -496,6 +521,7 @@ const AuthManager = {
         this.handleGoogleAuthSuccess(response.credential);
     }
 };
+window.AuthManager = AuthManager;
 
 // Immediate execution auth guard: redirect unauthenticated users before DOM rendering or external CDN scripts load
 AuthManager.requireAuth();
@@ -508,16 +534,18 @@ AuthManager.requireAuth();
 const FinanceStore = {
     expenses: [],
     income: [],
+    savings: { balance: 0, goal: 0, totalDeposits: 0, totalWithdrawals: 0, progress: 0, transactions: [] },
     budgets: { totalBudget: 35000, categories: {} },
     settings: { currencySymbol: '₹', currencyCode: 'INR', monthlyIncomeTarget: 60000, notifyBudgetLimit: true },
     isLoaded: false,
 
     async loadAll() {
         try {
-            const [expRes, incRes, bgRes] = await Promise.all([
+            const [expRes, incRes, bgRes, savRes] = await Promise.all([
                 apiRequest('/api/expenses', { method: 'GET' }),
                 apiRequest('/api/income', { method: 'GET' }),
-                apiRequest('/api/budgets', { method: 'GET' })
+                apiRequest('/api/budgets', { method: 'GET' }),
+                apiRequest('/api/savings', { method: 'GET' })
             ]);
 
             if (expRes.ok && expRes.data && expRes.data.expenses) {
@@ -550,12 +578,19 @@ const FinanceStore = {
                 this.budgets = { totalBudget: 35000, categories: {} };
             }
 
+            if (savRes.ok && savRes.data && savRes.data.savings) {
+                this.savings = savRes.data.savings;
+            } else {
+                this.savings = { balance: 0, goal: 0, totalDeposits: 0, totalWithdrawals: 0, progress: 0, transactions: [] };
+            }
+
             this.isLoaded = true;
         } catch (e) {
             console.error('Error loading financial data:', e);
             showToast('Unable to connect to the server. Please try again.', 'error');
             this.expenses = [];
             this.income = [];
+            this.savings = { balance: 0, goal: 0, totalDeposits: 0, totalWithdrawals: 0, progress: 0, transactions: [] };
             this.budgets = { totalBudget: 35000, categories: {} };
             this.isLoaded = true;
         }
@@ -735,6 +770,130 @@ const FinanceStore = {
         }
     },
 
+    getSavings() {
+        return this.savings || { balance: 0, goal: 0, totalDeposits: 0, totalWithdrawals: 0, progress: 0, transactions: [] };
+    },
+
+    getSavingsTransactionById(id) {
+        return (this.savings && this.savings.transactions ? this.savings.transactions : []).find(t => t.id === id);
+    },
+
+    async addSavingsDeposit(data) {
+        const res = await apiRequest('/api/savings/deposit', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok && res.data && res.data.success) {
+            if (res.data.summary) {
+                const tx = res.data.transaction;
+                const existingList = (this.savings && this.savings.transactions) ? this.savings.transactions : [];
+                this.savings = {
+                    ...this.savings,
+                    ...res.data.summary,
+                    transactions: [tx, ...existingList]
+                };
+            } else {
+                await this.loadAll();
+            }
+            return { success: true, transaction: res.data.transaction };
+        } else {
+            const msg = (res.status === 0)
+                ? 'Unable to connect to the server. Please try again.'
+                : (res.data && res.data.error) || 'Failed to record savings deposit.';
+            showToast(msg, 'error');
+            return { success: false, error: msg };
+        }
+    },
+
+    async withdrawSavings(data) {
+        const res = await apiRequest('/api/savings/withdraw', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok && res.data && res.data.success) {
+            if (res.data.summary) {
+                const tx = res.data.transaction;
+                const existingList = (this.savings && this.savings.transactions) ? this.savings.transactions : [];
+                this.savings = {
+                    ...this.savings,
+                    ...res.data.summary,
+                    transactions: [tx, ...existingList]
+                };
+            } else {
+                await this.loadAll();
+            }
+            return { success: true, transaction: res.data.transaction };
+        } else {
+            const msg = (res.status === 0)
+                ? 'Unable to connect to the server. Please try again.'
+                : (res.data && res.data.error) || 'Failed to process savings withdrawal.';
+            showToast(msg, 'error');
+            return { success: false, error: msg };
+        }
+    },
+
+    async updateSavingsGoal(targetAmount) {
+        const res = await apiRequest('/api/savings/goal', {
+            method: 'POST',
+            body: JSON.stringify({ targetAmount })
+        });
+
+        if (res.ok && res.data && res.data.success) {
+            if (res.data.summary) {
+                this.savings = {
+                    ...this.savings,
+                    ...res.data.summary
+                };
+            } else {
+                await this.loadAll();
+            }
+            return { success: true };
+        } else {
+            const msg = (res.status === 0)
+                ? 'Unable to connect to the server. Please try again.'
+                : (res.data && res.data.error) || 'Failed to update savings goal.';
+            showToast(msg, 'error');
+            return { success: false, error: msg };
+        }
+    },
+
+    async updateSavingsTransaction(id, data) {
+        const res = await apiRequest(`/api/savings/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok && res.data && res.data.success) {
+            await this.loadAll();
+            return { success: true };
+        } else {
+            const msg = (res.status === 0)
+                ? 'Unable to connect to the server. Please try again.'
+                : (res.data && res.data.error) || 'Failed to update savings transaction.';
+            showToast(msg, 'error');
+            return { success: false, error: msg };
+        }
+    },
+
+    async deleteSavingsTransaction(id) {
+        const res = await apiRequest(`/api/savings/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (res.ok && res.data && res.data.success) {
+            await this.loadAll();
+            return { success: true };
+        } else {
+            const msg = (res.status === 0)
+                ? 'Unable to connect to the server. Please try again.'
+                : (res.data && res.data.error) || 'Failed to delete savings transaction.';
+            showToast(msg, 'error');
+            return { success: false, error: msg };
+        }
+    },
+
     getSummary(yearMonth = null) {
         const allTxs = this.getTransactions();
         let targetMonth = yearMonth || new Date().toISOString().slice(0, 7);
@@ -830,6 +989,7 @@ const FinanceStore = {
         }
     }
 };
+window.FinanceStore = FinanceStore;
 
 // =========================================================
 // 4. UI TOAST & FORMATTING UTILITIES
@@ -983,7 +1143,7 @@ window.checkPasswordStrength = function(password) {
     return 'strong';
 };
 
-window.toggleMobileSidebar = function() {
+window.toggleMobileSidebar = function(forceClose = false) {
     const sidebar = document.querySelector('.sidebar');
     if (!sidebar) return;
 
@@ -994,18 +1154,178 @@ window.toggleMobileSidebar = function() {
         backdrop.className = 'sidebar-backdrop';
         document.body.appendChild(backdrop);
         backdrop.addEventListener('click', () => {
-            sidebar.classList.remove('open');
-            backdrop.classList.remove('active');
+            window.toggleMobileSidebar(true);
         });
+    }
+
+    // Ensure close button exists in mobile sidebar header
+    let closeBtn = sidebar.querySelector('.sidebar-close-btn');
+    if (!closeBtn) {
+        const logo = sidebar.querySelector('.sidebar-logo');
+        if (logo) {
+            closeBtn = document.createElement('button');
+            closeBtn.className = 'sidebar-close-btn';
+            closeBtn.setAttribute('type', 'button');
+            closeBtn.setAttribute('aria-label', 'Close menu');
+            closeBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+            closeBtn.onclick = (e) => {
+                e.stopPropagation();
+                window.toggleMobileSidebar(true);
+            };
+            logo.appendChild(closeBtn);
+        }
+    }
+
+    // Auto-close drawer on link click on mobile
+    sidebar.querySelectorAll('.sidebar-nav a, .sidebar-bottom a').forEach(link => {
+        if (!link.dataset.hasCloseListener) {
+            link.dataset.hasCloseListener = 'true';
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    window.toggleMobileSidebar(true);
+                }
+            });
+        }
+    });
+
+    if (forceClose) {
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('active');
+        document.body.classList.remove('sidebar-drawer-open');
+        return;
     }
 
     const isOpen = sidebar.classList.toggle('open');
     if (isOpen) {
         backdrop.classList.add('active');
+        document.body.classList.add('sidebar-drawer-open');
     } else {
         backdrop.classList.remove('active');
+        document.body.classList.remove('sidebar-drawer-open');
     }
 };
+
+// =========================================================
+// 4B. COMPREHENSIVE TOUCH SWIPE GESTURE ENGINE
+// =========================================================
+
+function initSwipeGestures() {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+    let touchStartTime = 0;
+    let isTracking = false;
+
+    const TAB_PAGES = [
+        'dashboard.html',
+        'income.html',
+        'expenses.html',
+        'savings.html',
+        'ai-assistant.html'
+    ];
+
+    function getCurrentPageIndex() {
+        const path = window.location.pathname.toLowerCase();
+        for (let i = 0; i < TAB_PAGES.length; i++) {
+            if (path.includes(TAB_PAGES[i].replace('.html', ''))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    document.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length !== 1) {
+            isTracking = false;
+            return;
+        }
+
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        touchEndX = touch.clientX;
+        touchEndY = touch.clientY;
+        touchStartTime = Date.now();
+        isTracking = true;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+        if (!isTracking || !e.touches || e.touches.length !== 1) return;
+        touchEndX = e.touches[0].clientX;
+        touchEndY = e.touches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+        if (!isTracking) return;
+        isTracking = false;
+
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+        const absX = Math.abs(deltaX);
+        const absY = Math.abs(deltaY);
+        const elapsedTime = Date.now() - touchStartTime;
+
+        // Must be a decisive gesture within 650ms
+        if (elapsedTime > 650) return;
+
+        const sidebar = document.querySelector('.sidebar');
+        const isDrawerOpen = sidebar && sidebar.classList.contains('open');
+
+        // 1. DRAWER SWIPE GESTURES:
+        if (isDrawerOpen) {
+            // Decisive swipe left closes the drawer
+            if (deltaX < -45 && absX > absY * 0.8) {
+                window.toggleMobileSidebar(true);
+                return;
+            }
+        } else if (window.innerWidth <= 768) {
+            // Edge Swipe Right: from the left screen boundary (< 45px) opens the drawer
+            if (touchStartX <= 45 && deltaX > 50 && absX > absY * 1.2) {
+                window.toggleMobileSidebar(false);
+                return;
+            }
+        }
+
+        // 2. MODAL SWIPE DOWN TO DISMISS:
+        const activeModalBox = document.querySelector('.sf-modal-overlay.active .sf-modal-box');
+        if (activeModalBox && deltaY > 60 && absY > absX * 1.5) {
+            const header = activeModalBox.querySelector('.sf-modal-header');
+            if (header && (e.target === header || header.contains(e.target) || touchStartY < 140)) {
+                if (typeof closeAllModals === 'function') {
+                    closeAllModals();
+                } else {
+                    document.querySelectorAll('.sf-modal-overlay.active').forEach(m => m.classList.remove('active'));
+                }
+                return;
+            }
+        }
+
+        // Avoid triggering page navigation if interacting with forms, buttons, canvas charts, or pills
+        const target = e.target;
+        if (target && target.closest('input, textarea, select, button, a, canvas, .ai-quick-pills, .analytics-timeframe-bar, .sf-modal-box')) {
+            return;
+        }
+
+        // 3. TAB / VIEW HORIZONTAL SWIPE GESTURES (Mobile & Tablet):
+        if (window.innerWidth <= 850 && absX > 75 && absX > absY * 1.6) {
+            const currentIndex = getCurrentPageIndex();
+            if (currentIndex === -1) return;
+
+            if (deltaX < -75) {
+                // Swipe Left -> Navigate to next tab
+                if (currentIndex < TAB_PAGES.length - 1) {
+                    window.location.href = TAB_PAGES[currentIndex + 1];
+                }
+            } else if (deltaX > 75 && touchStartX > 45) {
+                // Swipe Right -> Navigate to previous tab
+                if (currentIndex > 0) {
+                    window.location.href = TAB_PAGES[currentIndex - 1];
+                }
+            }
+        }
+    }, { passive: true });
+}
 
 // =========================================================
 // 5. UNIFIED MODAL SYSTEM (Add & Edit Transactions & Budgets)
@@ -1454,7 +1774,7 @@ window.handleBudgetSubmit = handleBudgetSubmit;
 
 async function renderCurrentPage() {
     const path = window.location.pathname.toLowerCase();
-    const protectedPages = ['dashboard', 'expenses', 'income', 'analytics', 'ai-assistant', 'profile'];
+    const protectedPages = ['dashboard', 'expenses', 'income', 'savings', 'analytics', 'ai-assistant', 'profile'];
     const isProtected = protectedPages.some(page => path.includes(page));
 
     let currentUser = null;
@@ -1481,6 +1801,8 @@ async function renderCurrentPage() {
         renderIncomePage();
     } else if (path.includes('expenses.html')) {
         renderExpensesPage();
+    } else if (path.includes('savings.html')) {
+        renderSavingsPage();
     } else if (path.includes('analytics.html')) {
         renderAnalyticsPage();
     } else if (path.includes('ai-assistant.html')) {
@@ -1637,7 +1959,7 @@ function renderDashboard() {
                         <i class="fa-solid fa-bullseye"></i>
                         Monthly Budget Progress
                     </h3>
-                    <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="budget-header-actions">
                         <span class="budget-status-pill ${pillClass}">
                             <i class="fa-solid ${pillIcon}"></i> ${pillText}
                         </span>
@@ -1751,7 +2073,7 @@ function renderDashboard() {
                             ${!isInc && tx.paymentMethod ? ` • <span class="payment-badge">${escapeHTML(tx.paymentMethod)}</span>` : ''}
                         </span>
                     </div>
-                    <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="transaction-actions-wrap">
                         <strong class="amount ${textClass}">${sign}${formatCurrency(tx.amount)}</strong>
                         <div class="action-btns">
                             <button class="edit-icon-btn" onclick="editTransactionItem('${tx.id}')" title="Edit">
@@ -1909,7 +2231,7 @@ function renderExpensesPage() {
                             ${tx.notes ? ' • ' + escapeHTML(tx.notes) : ''}
                         </span>
                     </div>
-                    <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="transaction-actions-wrap">
                         <strong class="amount expense-text">-${formatCurrency(tx.amount)}</strong>
                         <div class="action-btns">
                             <button class="edit-icon-btn" onclick="editTransactionItem('${tx.id}')" title="Edit">
@@ -2086,7 +2408,7 @@ function renderIncomePage() {
                             ${tx.notes ? ' • ' + escapeHTML(tx.notes) : ''}
                         </span>
                     </div>
-                    <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="transaction-actions-wrap">
                         <strong class="amount income-text">+${formatCurrency(tx.amount)}</strong>
                         <div class="action-btns">
                             <button class="edit-icon-btn" onclick="editTransactionItem('${tx.id}')" title="Edit">
@@ -3379,15 +3701,65 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!AuthManager.requireAuth()) return;
     FinanceStore.init();
 
-    // Responsive Mobile Toggle Setup
+    // Responsive Mobile Toggle & Header Grouping Setup
     const topbar = document.querySelector('.topbar');
     if (topbar && !document.querySelector('.mobile-nav-toggle')) {
+        const titleDiv = topbar.querySelector(':scope > div:not(.topbar-left)');
+        const leftWrap = document.createElement('div');
+        leftWrap.className = 'topbar-left';
+
         const toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
         toggleBtn.className = 'mobile-nav-toggle';
+        toggleBtn.setAttribute('aria-label', 'Toggle Navigation Menu');
         toggleBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
-        toggleBtn.onclick = window.toggleMobileSidebar;
-        topbar.prepend(toggleBtn);
+        toggleBtn.onclick = () => window.toggleMobileSidebar();
+
+        if (titleDiv) {
+            titleDiv.classList.add('topbar-title-wrap');
+            topbar.insertBefore(leftWrap, titleDiv);
+            leftWrap.appendChild(toggleBtn);
+            leftWrap.appendChild(titleDiv);
+        } else {
+            topbar.prepend(toggleBtn);
+        }
     }
+
+    // Responsive Mobile Bottom Navigation (Native App Experience)
+    if (!document.querySelector('.sf-mobile-bottom-nav')) {
+        const path = window.location.pathname.toLowerCase();
+        const protectedPages = ['dashboard', 'expenses', 'income', 'savings', 'analytics', 'ai-assistant', 'profile'];
+        if (protectedPages.some(page => path.includes(page))) {
+            const bottomNav = document.createElement('nav');
+            bottomNav.className = 'sf-mobile-bottom-nav';
+            bottomNav.innerHTML = `
+                <a href="dashboard.html" class="bottom-nav-item ${path.includes('dashboard') ? 'active' : ''}">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="income.html" class="bottom-nav-item ${path.includes('income') ? 'active' : ''}">
+                    <i class="fa-solid fa-arrow-down"></i>
+                    <span>Income</span>
+                </a>
+                <a href="expenses.html" class="bottom-nav-item ${path.includes('expenses') ? 'active' : ''}">
+                    <i class="fa-solid fa-arrow-up"></i>
+                    <span>Expenses</span>
+                </a>
+                <a href="savings.html" class="bottom-nav-item ${path.includes('savings') ? 'active' : ''}">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <span>Savings</span>
+                </a>
+                <a href="ai-assistant.html" class="bottom-nav-item ${path.includes('ai-assistant') ? 'active' : ''}">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>AI Bot</span>
+                </a>
+            `;
+            document.body.appendChild(bottomNav);
+        }
+    }
+
+    // Initialize Touch & Swipe Gestures
+    initSwipeGestures();
 
     // Login Form Setup
     const loginForm = document.getElementById('loginForm');
@@ -3895,3 +4267,647 @@ async function submitResetPasswordRequest() {
     }
 }
 window.submitResetPasswordRequest = submitResetPasswordRequest;
+
+// =========================================================
+// 8. SAVINGS DEPOSIT & WITHDRAWAL MANAGEMENT
+// =========================================================
+
+let currentEditingSavingsId = null;
+
+let savingsFilterState = {
+    search: '',
+    type: 'ALL',
+    category: 'ALL',
+    timeframe: 'ALL',
+    sort: 'NEWEST'
+};
+
+function calculateSavingsMetrics(current = 0, target = 0) {
+    const currentNum = Math.max(0, Number(current) || 0);
+    const targetNum = Number(target) || 0;
+
+    if (targetNum <= 0) {
+        return {
+            percentage: 0,
+            currentFormatted: currentNum.toLocaleString('en-IN', { maximumFractionDigits: 2 }),
+            targetFormatted: '0',
+            hasTarget: false
+        };
+    }
+
+    const rawPercent = (currentNum / targetNum) * 100;
+    const percentage = Math.min(Math.round(rawPercent), 100);
+
+    return {
+        percentage,
+        currentFormatted: currentNum.toLocaleString('en-IN', { maximumFractionDigits: 2 }),
+        targetFormatted: targetNum.toLocaleString('en-IN', { maximumFractionDigits: 2 }),
+        hasTarget: true
+    };
+}
+window.calculateSavingsMetrics = calculateSavingsMetrics;
+
+function renderSavingsPage() {
+    const savings = FinanceStore.getSavings();
+    const balance = Math.max(0, Number(savings.balance) || 0);
+    const goal = Math.max(0, Number(savings.goal) || 0);
+    const totalDeposits = Math.max(0, Number(savings.totalDeposits) || 0);
+    const totalWithdrawals = Math.max(0, Number(savings.totalWithdrawals) || 0);
+    const metrics = calculateSavingsMetrics(balance, goal);
+
+    // Summary Cards
+    const cardSavingsVal = document.getElementById('cardSavingsVal');
+    const cardTargetVal = document.getElementById('cardTargetVal');
+    const cardDepositsVal = document.getElementById('cardDepositsVal');
+    const cardWithdrawalsVal = document.getElementById('cardWithdrawalsVal');
+    const cardProgressVal = document.getElementById('cardProgressVal');
+
+    if (cardSavingsVal) cardSavingsVal.textContent = `₹${metrics.currentFormatted}`;
+    if (cardTargetVal) cardTargetVal.textContent = `₹${metrics.targetFormatted}`;
+    if (cardDepositsVal) cardDepositsVal.textContent = `₹${totalDeposits.toLocaleString('en-IN')}`;
+    if (cardWithdrawalsVal) cardWithdrawalsVal.textContent = `₹${totalWithdrawals.toLocaleString('en-IN')}`;
+    if (cardProgressVal) cardProgressVal.textContent = metrics.hasTarget ? `${metrics.percentage}%` : '0%';
+
+    // Goal and Progress Elements
+    const displayTargetList = document.querySelectorAll('#displayTargetAmount, .displayTargetAmount');
+    const displayCurrentList = document.querySelectorAll('#displayCurrentSavings, .displayCurrentSavings');
+    const progressBarList = document.querySelectorAll('#profileSavingsProgressBar, .profileSavingsProgressBar');
+    const percentTextList = document.querySelectorAll('#profileSavingsPercent, .profileSavingsPercent');
+    const zeroNoticeList = document.querySelectorAll('#targetZeroNotice, .targetZeroNotice');
+
+    displayTargetList.forEach(el => el.textContent = `₹${metrics.targetFormatted}`);
+    displayCurrentList.forEach(el => el.textContent = `₹${metrics.currentFormatted}`);
+
+    progressBarList.forEach(bar => {
+        bar.style.width = metrics.hasTarget ? `${metrics.percentage}%` : '0%';
+    });
+
+    percentTextList.forEach(txt => {
+        txt.textContent = metrics.hasTarget ? `${metrics.percentage}%` : 'Goal not set';
+    });
+
+    zeroNoticeList.forEach(notice => {
+        notice.style.display = metrics.hasTarget ? 'none' : 'block';
+    });
+
+    // Form: Set New Savings Target
+    initSavingsTargetHandler();
+
+    // Render Filter Toolbar
+    renderSavingsFilterToolbar(savings.transactions || []);
+
+    // Render Transaction List
+    renderSavingsTransactionList(savings.transactions || []);
+}
+window.renderSavingsPage = renderSavingsPage;
+window.renderProfileSavings = renderSavingsPage;
+
+function initSavingsTargetHandler() {
+    const form = document.getElementById('updateTargetForm');
+    if (!form || form.dataset.listenerAttached === 'true') return;
+
+    form.dataset.listenerAttached = 'true';
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const input = document.getElementById('targetInput');
+        const newTarget = parseFloat(input.value);
+
+        if (isNaN(newTarget) || newTarget < 0) {
+            showToast('Please enter a valid target amount (0 or greater).', 'error');
+            return;
+        }
+
+        const res = await FinanceStore.updateSavingsGoal(newTarget);
+        if (res && res.success) {
+            showToast(`Savings target updated to ₹${newTarget.toLocaleString('en-IN')}!`, 'success');
+            input.value = '';
+            renderSavingsPage();
+        }
+    });
+}
+window.initSavingsTargetHandler = initSavingsTargetHandler;
+
+function renderSavingsFilterToolbar(allTransactions) {
+    let filterContainer = document.getElementById('savingsFilterToolbar');
+    if (!filterContainer) return;
+
+    if (!filterContainer.innerHTML.trim() || !document.getElementById('savingsSearchInput')) {
+        filterContainer.innerHTML = `
+            <div class="filter-search-wrap">
+                <div class="filter-search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="savingsSearchInput" placeholder="Search by purpose, reason, or description..." value="${escapeHTML(savingsFilterState.search)}" oninput="onSavingsSearchChange(this.value)">
+                </div>
+            </div>
+
+            <div class="filter-controls-wrap">
+                <div class="filter-group">
+                    <label><i class="fa-solid fa-arrows-split-up-and-left"></i> Type:</label>
+                    <select class="filter-select" id="savingsTypeFilter" onchange="onSavingsTypeChange(this.value)">
+                        <option value="ALL" ${savingsFilterState.type === 'ALL' ? 'selected' : ''}>All Types</option>
+                        <option value="deposit" ${savingsFilterState.type === 'deposit' ? 'selected' : ''}>Deposits</option>
+                        <option value="withdrawal" ${savingsFilterState.type === 'withdrawal' ? 'selected' : ''}>Withdrawals</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label><i class="fa-solid fa-layer-group"></i> Purpose / Reason:</label>
+                    <select class="filter-select" id="savingsCategoryFilter" onchange="onSavingsCategoryChange(this.value)">
+                        <option value="ALL">All Purposes & Reasons</option>
+                        ${[...SAVINGS_PURPOSES, ...WITHDRAWAL_REASONS.filter(r => !SAVINGS_PURPOSES.includes(r))].map(c => `
+                            <option value="${c}" ${savingsFilterState.category === c ? 'selected' : ''}>${c}</option>
+                        `).join('')}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label><i class="fa-solid fa-calendar"></i> Date:</label>
+                    <select class="filter-select" id="savingsDateFilter" onchange="onSavingsDateChange(this.value)">
+                        <option value="ALL" ${savingsFilterState.timeframe === 'ALL' ? 'selected' : ''}>All Time</option>
+                        <option value="THIS_MONTH" ${savingsFilterState.timeframe === 'THIS_MONTH' ? 'selected' : ''}>This Month</option>
+                        <option value="LAST_30" ${savingsFilterState.timeframe === 'LAST_30' ? 'selected' : ''}>Last 30 Days</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label><i class="fa-solid fa-arrow-down-short-wide"></i> Sort:</label>
+                    <select class="filter-select" id="savingsSortFilter" onchange="onSavingsSortChange(this.value)">
+                        <option value="NEWEST" ${savingsFilterState.sort === 'NEWEST' ? 'selected' : ''}>Newest First</option>
+                        <option value="OLDEST" ${savingsFilterState.sort === 'OLDEST' ? 'selected' : ''}>Oldest First</option>
+                        <option value="HIGHEST" ${savingsFilterState.sort === 'HIGHEST' ? 'selected' : ''}>Highest Amount</option>
+                        <option value="LOWEST" ${savingsFilterState.sort === 'LOWEST' ? 'selected' : ''}>Lowest Amount</option>
+                    </select>
+                </div>
+            </div>
+        `;
+    } else {
+        const searchInput = document.getElementById('savingsSearchInput');
+        if (searchInput && document.activeElement !== searchInput) {
+            searchInput.value = savingsFilterState.search;
+        }
+        const typeSelect = document.getElementById('savingsTypeFilter');
+        if (typeSelect) typeSelect.value = savingsFilterState.type;
+        const catSelect = document.getElementById('savingsCategoryFilter');
+        if (catSelect) catSelect.value = savingsFilterState.category;
+        const dateSelect = document.getElementById('savingsDateFilter');
+        if (dateSelect) dateSelect.value = savingsFilterState.timeframe;
+        const sortSelect = document.getElementById('savingsSortFilter');
+        if (sortSelect) sortSelect.value = savingsFilterState.sort;
+    }
+}
+
+function renderSavingsTransactionList(transactions) {
+    const listContainer = document.getElementById('savingsTransactionList');
+    if (!listContainer) return;
+
+    let filtered = (transactions || []).filter(tx => {
+        if (savingsFilterState.search) {
+            const term = savingsFilterState.search.toLowerCase();
+            const purposeMatch = (tx.purpose || tx.category || '').toLowerCase().includes(term);
+            const descMatch = (tx.description || '').toLowerCase().includes(term);
+            if (!purposeMatch && !descMatch) return false;
+        }
+        if (savingsFilterState.type !== 'ALL' && tx.type !== savingsFilterState.type) {
+            return false;
+        }
+        if (savingsFilterState.category !== 'ALL' && (tx.purpose !== savingsFilterState.category && tx.category !== savingsFilterState.category)) {
+            return false;
+        }
+        if (savingsFilterState.timeframe === 'THIS_MONTH') {
+            const currMonth = new Date().toISOString().slice(0, 7);
+            if (!tx.date || !tx.date.startsWith(currMonth)) return false;
+        } else if (savingsFilterState.timeframe === 'LAST_30') {
+            const cutoff = new Date();
+            cutoff.setDate(cutoff.getDate() - 30);
+            if (new Date(tx.date) < cutoff) return false;
+        }
+        return true;
+    });
+
+    filtered.sort((a, b) => {
+        if (savingsFilterState.sort === 'NEWEST') return getTransactionTimestamp(b) - getTransactionTimestamp(a);
+        if (savingsFilterState.sort === 'OLDEST') return getTransactionTimestamp(a) - getTransactionTimestamp(b);
+        if (savingsFilterState.sort === 'HIGHEST') return b.amount - a.amount;
+        if (savingsFilterState.sort === 'LOWEST') return a.amount - b.amount;
+        return 0;
+    });
+
+    if (filtered.length === 0) {
+        listContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fa-solid fa-piggy-bank"></i>
+                <p>No savings transactions found. Add a deposit to start tracking your savings.</p>
+            </div>
+        `;
+        return;
+    }
+
+    listContainer.innerHTML = filtered.map(tx => {
+        const isDeposit = tx.type === 'deposit';
+        const purposeOrReason = tx.purpose || tx.category || (isDeposit ? 'General Savings' : 'Other');
+        const iconInfo = (CATEGORY_ICONS && CATEGORY_ICONS[purposeOrReason]) ? CATEGORY_ICONS[purposeOrReason].icon : (isDeposit ? 'fa-piggy-bank' : 'fa-wallet');
+        const badgeColor = isDeposit ? '#16a34a' : '#dc2626';
+        const badgeBg = isDeposit ? '#dcfce7' : '#fee2e2';
+        const typeLabel = isDeposit ? 'Deposit' : 'Withdrawal';
+        const sign = isDeposit ? '+' : '-';
+        const amountClass = isDeposit ? 'income-text' : 'expense-text';
+        const iconClass = isDeposit ? 'income' : 'expense';
+
+        return `
+            <div class="transaction">
+                <div class="transaction-icon ${iconClass}">
+                    <i class="fa-solid ${iconInfo}"></i>
+                </div>
+                <div class="transaction-info">
+                    <strong>${escapeHTML(purposeOrReason)}</strong>
+                    <span>
+                        <span style="background:${badgeBg}; color:${badgeColor}; font-weight:600; font-size:0.7rem; padding:2px 8px; border-radius:10px; display:inline-block; margin-right:4px;">
+                            <i class="fa-solid ${isDeposit ? 'fa-arrow-down' : 'fa-arrow-up'}"></i> ${typeLabel}
+                        </span>
+                        • ${formatDateDisplay(tx.date, tx.time)}
+                        ${tx.description ? ' • ' + escapeHTML(tx.description) : ''}
+                    </span>
+                </div>
+                <div class="transaction-actions-wrap">
+                    <strong class="amount ${amountClass}">${sign}${formatCurrency(tx.amount)}</strong>
+                    <div class="action-btns">
+                        <button class="edit-icon-btn" onclick="editSavingsTransaction('${tx.id}')" title="Edit">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="delete-icon-btn" onclick="deleteSavingsTransaction('${tx.id}', '${escapeHTML(purposeOrReason)}')" title="Delete">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+window.onSavingsSearchChange = function(val) {
+    savingsFilterState.search = val;
+    renderSavingsTransactionList(FinanceStore.getSavings().transactions || []);
+};
+
+window.onSavingsTypeChange = function(val) {
+    savingsFilterState.type = val;
+    renderSavingsTransactionList(FinanceStore.getSavings().transactions || []);
+};
+
+window.onSavingsCategoryChange = function(val) {
+    savingsFilterState.category = val;
+    renderSavingsTransactionList(FinanceStore.getSavings().transactions || []);
+};
+
+window.onSavingsDateChange = function(val) {
+    savingsFilterState.timeframe = val;
+    renderSavingsTransactionList(FinanceStore.getSavings().transactions || []);
+};
+
+window.onSavingsSortChange = function(val) {
+    savingsFilterState.sort = val;
+    renderSavingsTransactionList(FinanceStore.getSavings().transactions || []);
+};
+
+// =========================================================
+// SAVINGS MODAL & OPERATIONS
+// =========================================================
+
+function createSavingsModal() {
+    let modal = document.getElementById('savingsModal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = 'savingsModal';
+    modal.className = 'sf-modal-overlay';
+    modal.innerHTML = `
+        <div class="sf-modal-box">
+            <div class="sf-modal-header">
+                <div class="sf-modal-title-wrap">
+                    <i class="fa-solid fa-piggy-bank modal-icon" id="savingsModalIcon"></i>
+                    <h3 id="savingsModalTitle">Add Savings</h3>
+                </div>
+                <button type="button" class="close-modal-btn" onclick="closeSavingsModal()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="sfSavingsForm" onsubmit="handleSavingsSubmit(event)">
+                <input type="hidden" id="savingsModalType" value="deposit">
+                <input type="hidden" id="savingsModalEditId" value="">
+
+                <div class="form-group" id="savingsTypeSelectorWrap">
+                    <label>Transaction Type</label>
+                    <div class="type-selector-pills">
+                        <label class="pill-option">
+                            <input type="radio" name="savingsTypeRadio" id="modalSavingsTypeDeposit" value="deposit" checked onchange="onSavingsModalTypeToggle('deposit')">
+                            <span><i class="fa-solid fa-arrow-down"></i> Deposit</span>
+                        </label>
+                        <label class="pill-option">
+                            <input type="radio" name="savingsTypeRadio" id="modalSavingsTypeWithdrawal" value="withdrawal" onchange="onSavingsModalTypeToggle('withdrawal')">
+                            <span><i class="fa-solid fa-arrow-up"></i> Withdrawal</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="savingsModalAmount">Amount (₹)</label>
+                        <div class="input-box">
+                            <i class="fa-solid fa-coins"></i>
+                            <input type="number" id="savingsModalAmount" step="any" min="0.01" placeholder="0.00" required>
+                        </div>
+                        <small id="savingsModalBalanceHint" style="display:none; color:#64748b; font-size:0.78rem; margin-top:4px; font-weight:500;"></small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="savingsModalCategory" id="savingsModalCategoryLabel">Savings Purpose</label>
+                        <div class="input-box">
+                            <i class="fa-solid fa-layer-group"></i>
+                            <select id="savingsModalCategory" required></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="savingsModalDate">Date</label>
+                        <div class="input-box">
+                            <i class="fa-solid fa-calendar"></i>
+                            <input type="date" id="savingsModalDate" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="savingsModalTime">Time</label>
+                        <div class="input-box">
+                            <i class="fa-solid fa-clock"></i>
+                            <input type="time" id="savingsModalTime" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="savingsModalDescription">Description (Optional)</label>
+                    <div class="input-box">
+                        <i class="fa-solid fa-note-sticky"></i>
+                        <input type="text" id="savingsModalDescription" placeholder="Optional notes or details...">
+                    </div>
+                </div>
+
+                <div class="sf-modal-actions">
+                    <button type="button" class="cancel-btn" onclick="closeSavingsModal()">Cancel</button>
+                    <button type="submit" class="navy-btn" id="savingsModalSubmitBtn">
+                        <i class="fa-solid fa-check"></i> <span id="savingsModalSubmitText">Save</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const sfForm = modal.querySelector('#sfSavingsForm');
+    if (sfForm) {
+        sfForm.addEventListener('submit', (e) => handleSavingsSubmit(e));
+    }
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeSavingsModal();
+    });
+
+    return modal;
+}
+
+function updateSavingsModalCategoryOptions(type) {
+    const categorySelect = document.getElementById('savingsModalCategory');
+    const categoryLabel = document.getElementById('savingsModalCategoryLabel');
+    const balanceHint = document.getElementById('savingsModalBalanceHint');
+    const currentBalance = (FinanceStore.getSavings() && FinanceStore.getSavings().balance) || 0;
+
+    if (!categorySelect) return;
+
+    categorySelect.innerHTML = '';
+    if (type === 'deposit') {
+        if (categoryLabel) categoryLabel.textContent = 'Savings Purpose';
+        if (balanceHint) balanceHint.style.display = 'none';
+        SAVINGS_PURPOSES.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p;
+            opt.textContent = p;
+            categorySelect.appendChild(opt);
+        });
+    } else {
+        if (categoryLabel) categoryLabel.textContent = 'Withdrawal Reason';
+        if (balanceHint) {
+            balanceHint.style.display = 'block';
+            balanceHint.textContent = `Available Balance: ₹${currentBalance.toLocaleString('en-IN')}`;
+        }
+        WITHDRAWAL_REASONS.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r;
+            opt.textContent = r;
+            categorySelect.appendChild(opt);
+        });
+    }
+}
+
+function onSavingsModalTypeToggle(type) {
+    const typeInput = document.getElementById('savingsModalType');
+    if (typeInput) typeInput.value = type;
+
+    const modalIcon = document.getElementById('savingsModalIcon');
+    const modalTitle = document.getElementById('savingsModalTitle');
+    const submitBtnText = document.getElementById('savingsModalSubmitText');
+    const submitBtn = document.getElementById('savingsModalSubmitBtn');
+
+    if (type === 'deposit') {
+        if (modalIcon) modalIcon.className = 'fa-solid fa-piggy-bank modal-icon';
+        if (modalTitle) modalTitle.textContent = currentEditingSavingsId ? 'Edit Savings Deposit' : 'Add Savings Deposit';
+        if (submitBtnText) submitBtnText.textContent = currentEditingSavingsId ? 'Save Changes' : 'Add Savings';
+        if (submitBtn) {
+            submitBtn.style.background = '';
+            submitBtn.style.borderColor = '';
+        }
+    } else {
+        if (modalIcon) modalIcon.className = 'fa-solid fa-arrow-up-from-bracket modal-icon';
+        if (modalTitle) modalTitle.textContent = currentEditingSavingsId ? 'Edit Savings Withdrawal' : 'Withdraw Savings';
+        if (submitBtnText) submitBtnText.textContent = currentEditingSavingsId ? 'Save Changes' : 'Withdraw Savings';
+        if (submitBtn) {
+            submitBtn.style.background = '#dc2626';
+            submitBtn.style.borderColor = '#dc2626';
+        }
+    }
+
+    updateSavingsModalCategoryOptions(type);
+}
+window.onSavingsModalTypeToggle = onSavingsModalTypeToggle;
+
+function openSavingsModal(type = 'deposit', existingId = null) {
+    const modal = createSavingsModal();
+    currentEditingSavingsId = existingId;
+
+    const editIdInput = document.getElementById('savingsModalEditId');
+    const typeDepositRadio = document.getElementById('modalSavingsTypeDeposit');
+    const typeWithdrawalRadio = document.getElementById('modalSavingsTypeWithdrawal');
+    const typeSelectorWrap = document.getElementById('savingsTypeSelectorWrap');
+
+    if (editIdInput) editIdInput.value = existingId || '';
+
+    if (existingId) {
+        const tx = FinanceStore.getSavingsTransactionById(existingId);
+        if (tx) {
+            type = tx.type;
+            if (typeSelectorWrap) typeSelectorWrap.style.display = 'none'; // Lock type on edit
+            if (type === 'deposit' && typeDepositRadio) typeDepositRadio.checked = true;
+            if (type === 'withdrawal' && typeWithdrawalRadio) typeWithdrawalRadio.checked = true;
+            onSavingsModalTypeToggle(type);
+
+            document.getElementById('savingsModalAmount').value = tx.amount || '';
+            document.getElementById('savingsModalCategory').value = tx.purpose || tx.category || '';
+            document.getElementById('savingsModalDate').value = tx.date || getCurrentLocalDate();
+            document.getElementById('savingsModalTime').value = (tx.time && tx.time.trim()) ? tx.time.trim() : getCurrentLocalTime();
+            document.getElementById('savingsModalDescription').value = tx.description || '';
+
+            modal.classList.add('active');
+            return;
+        }
+    }
+
+    if (typeSelectorWrap) typeSelectorWrap.style.display = 'block';
+    if (type === 'deposit' && typeDepositRadio) typeDepositRadio.checked = true;
+    if (type === 'withdrawal' && typeWithdrawalRadio) typeWithdrawalRadio.checked = true;
+    onSavingsModalTypeToggle(type);
+
+    document.getElementById('savingsModalAmount').value = '';
+    document.getElementById('savingsModalDate').value = getCurrentLocalDate();
+    document.getElementById('savingsModalTime').value = getCurrentLocalTime();
+    document.getElementById('savingsModalDescription').value = '';
+
+    modal.classList.add('active');
+}
+window.openSavingsModal = openSavingsModal;
+
+function closeSavingsModal() {
+    const modal = document.getElementById('savingsModal');
+    if (modal) modal.classList.remove('active');
+    currentEditingSavingsId = null;
+}
+window.closeSavingsModal = closeSavingsModal;
+
+async function handleSavingsSubmit(event) {
+    event.preventDefault();
+
+    const type = document.getElementById('savingsModalType').value || 'deposit';
+    const amountVal = parseFloat(document.getElementById('savingsModalAmount').value);
+    const purposeOrReason = document.getElementById('savingsModalCategory').value;
+    const date = document.getElementById('savingsModalDate').value || getCurrentLocalDate();
+    const time = document.getElementById('savingsModalTime').value || getCurrentLocalTime();
+    const description = (document.getElementById('savingsModalDescription').value || '').trim();
+
+    if (isNaN(amountVal) || amountVal <= 0) {
+        showToast('Please enter a valid amount greater than zero.', 'error');
+        return;
+    }
+
+    if (!purposeOrReason) {
+        showToast(`Please select a valid ${type === 'deposit' ? 'savings purpose' : 'withdrawal reason'}.`, 'error');
+        return;
+    }
+
+    const currentSavings = FinanceStore.getSavings();
+    const availableBalance = currentSavings ? (currentSavings.balance || 0) : 0;
+
+    // Client-side balance check for withdrawals
+    if (type === 'withdrawal' && !currentEditingSavingsId) {
+        if (amountVal > availableBalance) {
+            showToast(`Withdrawal cannot exceed your available savings balance (₹${availableBalance.toLocaleString('en-IN')}).`, 'error');
+            return;
+        }
+    }
+
+    // In-flight debounce / duplicate submission prevention
+    const submitBtn = document.getElementById('savingsModalSubmitBtn');
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+        let res;
+        if (currentEditingSavingsId) {
+            res = await FinanceStore.updateSavingsTransaction(currentEditingSavingsId, {
+                amount: amountVal,
+                purpose: purposeOrReason,
+                reason: purposeOrReason,
+                date,
+                time,
+                description
+            });
+            if (res && res.success) {
+                showToast('Savings transaction updated successfully!', 'success');
+                closeSavingsModal();
+                renderSavingsPage();
+            }
+        } else {
+            // Client-generated unique ID for idempotency
+            const clientTxId = (type === 'deposit' ? 'sav_dep_' : 'sav_wth_') + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+
+            if (type === 'deposit') {
+                res = await FinanceStore.addSavingsDeposit({
+                    id: clientTxId,
+                    amount: amountVal,
+                    purpose: purposeOrReason,
+                    date,
+                    time,
+                    description
+                });
+            } else {
+                res = await FinanceStore.withdrawSavings({
+                    id: clientTxId,
+                    amount: amountVal,
+                    reason: purposeOrReason,
+                    purpose: purposeOrReason,
+                    date,
+                    time,
+                    description
+                });
+            }
+
+            if (res && res.success) {
+                const label = type === 'deposit' ? 'Deposit' : 'Withdrawal';
+                showToast(`${label} of ₹${amountVal.toLocaleString('en-IN')} recorded successfully!`, 'success');
+                closeSavingsModal();
+                renderSavingsPage();
+            }
+        }
+    } finally {
+        if (submitBtn) submitBtn.disabled = false;
+    }
+}
+window.handleSavingsSubmit = handleSavingsSubmit;
+
+function editSavingsTransaction(id) {
+    openSavingsModal('deposit', id);
+}
+window.editSavingsTransaction = editSavingsTransaction;
+
+async function deleteSavingsTransaction(id, title) {
+    const tx = FinanceStore.getSavingsTransactionById(id);
+    if (!tx) return;
+
+    const currentSavings = FinanceStore.getSavings();
+    const availableBalance = currentSavings ? (currentSavings.balance || 0) : 0;
+
+    // Safety balance validation before deleting deposit
+    if (tx.type === 'deposit' && (availableBalance - tx.amount < 0)) {
+        alert(`Cannot delete this deposit: available savings balance is ₹${availableBalance.toLocaleString('en-IN')}, which is less than the deposit amount (₹${tx.amount.toLocaleString('en-IN')}). Deleting it would leave a negative balance.`);
+        return;
+    }
+
+    if (confirm(`Are you sure you want to delete this ${tx.type} of ₹${tx.amount.toLocaleString('en-IN')} ("${title || tx.purpose}")?`)) {
+        const res = await FinanceStore.deleteSavingsTransaction(id);
+        if (res && res.success) {
+            showToast(`Deleted savings ${tx.type}.`, 'info');
+            renderSavingsPage();
+        }
+    }
+}
+window.deleteSavingsTransaction = deleteSavingsTransaction;

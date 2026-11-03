@@ -17,6 +17,7 @@ const filesToCopy = [
     'income.html',
     'analytics.html',
     'profile.html',
+    'savings.html',
     'ai-assistant.html',
     'script.js',
     'style.css',
